@@ -98,6 +98,218 @@ class SwigPyIterator(_object):
 SwigPyIterator_swigregister = _driver.SwigPyIterator_swigregister
 SwigPyIterator_swigregister(SwigPyIterator)
 
+class floatArray(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, floatArray, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, floatArray, name)
+    __repr__ = _swig_repr
+    def __init__(self, *args): 
+        this = _driver.new_floatArray(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _driver.delete_floatArray
+    __del__ = lambda self : None;
+    def __getitem__(self, *args): return _driver.floatArray___getitem__(self, *args)
+    def __setitem__(self, *args): return _driver.floatArray___setitem__(self, *args)
+    def cast(self): return _driver.floatArray_cast(self)
+    __swig_getmethods__["frompointer"] = lambda x: _driver.floatArray_frompointer
+    if _newclass:frompointer = staticmethod(_driver.floatArray_frompointer)
+floatArray_swigregister = _driver.floatArray_swigregister
+floatArray_swigregister(floatArray)
+
+def floatArray_frompointer(*args):
+  return _driver.floatArray_frompointer(*args)
+floatArray_frompointer = _driver.floatArray_frompointer
+
+class strVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, strVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, strVector, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _driver.strVector_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _driver.strVector___nonzero__(self)
+    def __bool__(self): return _driver.strVector___bool__(self)
+    def __len__(self): return _driver.strVector___len__(self)
+    def pop(self): return _driver.strVector_pop(self)
+    def __getslice__(self, *args): return _driver.strVector___getslice__(self, *args)
+    def __setslice__(self, *args): return _driver.strVector___setslice__(self, *args)
+    def __delslice__(self, *args): return _driver.strVector___delslice__(self, *args)
+    def __delitem__(self, *args): return _driver.strVector___delitem__(self, *args)
+    def __getitem__(self, *args): return _driver.strVector___getitem__(self, *args)
+    def __setitem__(self, *args): return _driver.strVector___setitem__(self, *args)
+    def append(self, *args): return _driver.strVector_append(self, *args)
+    def empty(self): return _driver.strVector_empty(self)
+    def size(self): return _driver.strVector_size(self)
+    def clear(self): return _driver.strVector_clear(self)
+    def swap(self, *args): return _driver.strVector_swap(self, *args)
+    def get_allocator(self): return _driver.strVector_get_allocator(self)
+    def begin(self): return _driver.strVector_begin(self)
+    def end(self): return _driver.strVector_end(self)
+    def rbegin(self): return _driver.strVector_rbegin(self)
+    def rend(self): return _driver.strVector_rend(self)
+    def pop_back(self): return _driver.strVector_pop_back(self)
+    def erase(self, *args): return _driver.strVector_erase(self, *args)
+    def __init__(self, *args): 
+        this = _driver.new_strVector(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _driver.strVector_push_back(self, *args)
+    def front(self): return _driver.strVector_front(self)
+    def back(self): return _driver.strVector_back(self)
+    def assign(self, *args): return _driver.strVector_assign(self, *args)
+    def resize(self, *args): return _driver.strVector_resize(self, *args)
+    def insert(self, *args): return _driver.strVector_insert(self, *args)
+    def reserve(self, *args): return _driver.strVector_reserve(self, *args)
+    def capacity(self): return _driver.strVector_capacity(self)
+    __swig_destroy__ = _driver.delete_strVector
+    __del__ = lambda self : None;
+strVector_swigregister = _driver.strVector_swigregister
+strVector_swigregister(strVector)
+
+class intVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, intVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, intVector, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _driver.intVector_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _driver.intVector___nonzero__(self)
+    def __bool__(self): return _driver.intVector___bool__(self)
+    def __len__(self): return _driver.intVector___len__(self)
+    def pop(self): return _driver.intVector_pop(self)
+    def __getslice__(self, *args): return _driver.intVector___getslice__(self, *args)
+    def __setslice__(self, *args): return _driver.intVector___setslice__(self, *args)
+    def __delslice__(self, *args): return _driver.intVector___delslice__(self, *args)
+    def __delitem__(self, *args): return _driver.intVector___delitem__(self, *args)
+    def __getitem__(self, *args): return _driver.intVector___getitem__(self, *args)
+    def __setitem__(self, *args): return _driver.intVector___setitem__(self, *args)
+    def append(self, *args): return _driver.intVector_append(self, *args)
+    def empty(self): return _driver.intVector_empty(self)
+    def size(self): return _driver.intVector_size(self)
+    def clear(self): return _driver.intVector_clear(self)
+    def swap(self, *args): return _driver.intVector_swap(self, *args)
+    def get_allocator(self): return _driver.intVector_get_allocator(self)
+    def begin(self): return _driver.intVector_begin(self)
+    def end(self): return _driver.intVector_end(self)
+    def rbegin(self): return _driver.intVector_rbegin(self)
+    def rend(self): return _driver.intVector_rend(self)
+    def pop_back(self): return _driver.intVector_pop_back(self)
+    def erase(self, *args): return _driver.intVector_erase(self, *args)
+    def __init__(self, *args): 
+        this = _driver.new_intVector(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _driver.intVector_push_back(self, *args)
+    def front(self): return _driver.intVector_front(self)
+    def back(self): return _driver.intVector_back(self)
+    def assign(self, *args): return _driver.intVector_assign(self, *args)
+    def resize(self, *args): return _driver.intVector_resize(self, *args)
+    def insert(self, *args): return _driver.intVector_insert(self, *args)
+    def reserve(self, *args): return _driver.intVector_reserve(self, *args)
+    def capacity(self): return _driver.intVector_capacity(self)
+    __swig_destroy__ = _driver.delete_intVector
+    __del__ = lambda self : None;
+intVector_swigregister = _driver.intVector_swigregister
+intVector_swigregister(intVector)
+
+class floatVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, floatVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, floatVector, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _driver.floatVector_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _driver.floatVector___nonzero__(self)
+    def __bool__(self): return _driver.floatVector___bool__(self)
+    def __len__(self): return _driver.floatVector___len__(self)
+    def pop(self): return _driver.floatVector_pop(self)
+    def __getslice__(self, *args): return _driver.floatVector___getslice__(self, *args)
+    def __setslice__(self, *args): return _driver.floatVector___setslice__(self, *args)
+    def __delslice__(self, *args): return _driver.floatVector___delslice__(self, *args)
+    def __delitem__(self, *args): return _driver.floatVector___delitem__(self, *args)
+    def __getitem__(self, *args): return _driver.floatVector___getitem__(self, *args)
+    def __setitem__(self, *args): return _driver.floatVector___setitem__(self, *args)
+    def append(self, *args): return _driver.floatVector_append(self, *args)
+    def empty(self): return _driver.floatVector_empty(self)
+    def size(self): return _driver.floatVector_size(self)
+    def clear(self): return _driver.floatVector_clear(self)
+    def swap(self, *args): return _driver.floatVector_swap(self, *args)
+    def get_allocator(self): return _driver.floatVector_get_allocator(self)
+    def begin(self): return _driver.floatVector_begin(self)
+    def end(self): return _driver.floatVector_end(self)
+    def rbegin(self): return _driver.floatVector_rbegin(self)
+    def rend(self): return _driver.floatVector_rend(self)
+    def pop_back(self): return _driver.floatVector_pop_back(self)
+    def erase(self, *args): return _driver.floatVector_erase(self, *args)
+    def __init__(self, *args): 
+        this = _driver.new_floatVector(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _driver.floatVector_push_back(self, *args)
+    def front(self): return _driver.floatVector_front(self)
+    def back(self): return _driver.floatVector_back(self)
+    def assign(self, *args): return _driver.floatVector_assign(self, *args)
+    def resize(self, *args): return _driver.floatVector_resize(self, *args)
+    def insert(self, *args): return _driver.floatVector_insert(self, *args)
+    def reserve(self, *args): return _driver.floatVector_reserve(self, *args)
+    def capacity(self): return _driver.floatVector_capacity(self)
+    __swig_destroy__ = _driver.delete_floatVector
+    __del__ = lambda self : None;
+floatVector_swigregister = _driver.floatVector_swigregister
+floatVector_swigregister(floatVector)
+
+class layerVector(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, layerVector, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, layerVector, name)
+    __repr__ = _swig_repr
+    def iterator(self): return _driver.layerVector_iterator(self)
+    def __iter__(self): return self.iterator()
+    def __nonzero__(self): return _driver.layerVector___nonzero__(self)
+    def __bool__(self): return _driver.layerVector___bool__(self)
+    def __len__(self): return _driver.layerVector___len__(self)
+    def pop(self): return _driver.layerVector_pop(self)
+    def __getslice__(self, *args): return _driver.layerVector___getslice__(self, *args)
+    def __setslice__(self, *args): return _driver.layerVector___setslice__(self, *args)
+    def __delslice__(self, *args): return _driver.layerVector___delslice__(self, *args)
+    def __delitem__(self, *args): return _driver.layerVector___delitem__(self, *args)
+    def __getitem__(self, *args): return _driver.layerVector___getitem__(self, *args)
+    def __setitem__(self, *args): return _driver.layerVector___setitem__(self, *args)
+    def append(self, *args): return _driver.layerVector_append(self, *args)
+    def empty(self): return _driver.layerVector_empty(self)
+    def size(self): return _driver.layerVector_size(self)
+    def clear(self): return _driver.layerVector_clear(self)
+    def swap(self, *args): return _driver.layerVector_swap(self, *args)
+    def get_allocator(self): return _driver.layerVector_get_allocator(self)
+    def begin(self): return _driver.layerVector_begin(self)
+    def end(self): return _driver.layerVector_end(self)
+    def rbegin(self): return _driver.layerVector_rbegin(self)
+    def rend(self): return _driver.layerVector_rend(self)
+    def pop_back(self): return _driver.layerVector_pop_back(self)
+    def erase(self, *args): return _driver.layerVector_erase(self, *args)
+    def __init__(self, *args): 
+        this = _driver.new_layerVector(*args)
+        try: self.this.append(this)
+        except: self.this = this
+    def push_back(self, *args): return _driver.layerVector_push_back(self, *args)
+    def front(self): return _driver.layerVector_front(self)
+    def back(self): return _driver.layerVector_back(self)
+    def assign(self, *args): return _driver.layerVector_assign(self, *args)
+    def resize(self, *args): return _driver.layerVector_resize(self, *args)
+    def insert(self, *args): return _driver.layerVector_insert(self, *args)
+    def reserve(self, *args): return _driver.layerVector_reserve(self, *args)
+    def capacity(self): return _driver.layerVector_capacity(self)
+    __swig_destroy__ = _driver.delete_layerVector
+    __del__ = lambda self : None;
+layerVector_swigregister = _driver.layerVector_swigregister
+layerVector_swigregister(layerVector)
+
 class Driver(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, Driver, name, value)
@@ -116,6 +328,75 @@ class Driver(_object):
     __del__ = lambda self : None;
 Driver_swigregister = _driver.Driver_swigregister
 Driver_swigregister(Driver)
+
+class NeuralNet(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, NeuralNet, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, NeuralNet, name)
+    __repr__ = _swig_repr
+    __swig_getmethods__["CreateForTest"] = lambda x: _driver.NeuralNet_CreateForTest
+    if _newclass:CreateForTest = staticmethod(_driver.NeuralNet_CreateForTest)
+    def Load(self, *args): return _driver.NeuralNet_Load(self, *args)
+    def layers(self): return _driver.NeuralNet_layers(self)
+    def srclayers(self, *args): return _driver.NeuralNet_srclayers(self, *args)
+    def __init__(self): 
+        this = _driver.new_NeuralNet()
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _driver.delete_NeuralNet
+    __del__ = lambda self : None;
+NeuralNet_swigregister = _driver.NeuralNet_swigregister
+NeuralNet_swigregister(NeuralNet)
+
+def NeuralNet_CreateForTest(*args):
+  return _driver.NeuralNet_CreateForTest(*args)
+NeuralNet_CreateForTest = _driver.NeuralNet_CreateForTest
+
+class DummyInputLayer(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, DummyInputLayer, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, DummyInputLayer, name)
+    __repr__ = _swig_repr
+    def Feed(self, *args): return _driver.DummyInputLayer_Feed(self, *args)
+    def ToLayer(self): return _driver.DummyInputLayer_ToLayer(self)
+    def __init__(self): 
+        this = _driver.new_DummyInputLayer()
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _driver.delete_DummyInputLayer
+    __del__ = lambda self : None;
+DummyInputLayer_swigregister = _driver.DummyInputLayer_swigregister
+DummyInputLayer_swigregister(DummyInputLayer)
+
+class Layer(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Layer, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, Layer, name)
+    def __init__(self, *args, **kwargs): raise AttributeError("No constructor defined")
+    __repr__ = _swig_repr
+    def ComputeFeature(self, *args): return _driver.Layer_ComputeFeature(self, *args)
+    def data(self, *args): return _driver.Layer_data(self, *args)
+Layer_swigregister = _driver.Layer_swigregister
+Layer_swigregister(Layer)
+
+class floatBlob(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, floatBlob, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, floatBlob, name)
+    __repr__ = _swig_repr
+    def mutable_cpu_data(self): return _driver.floatBlob_mutable_cpu_data(self)
+    def __init__(self): 
+        this = _driver.new_floatBlob()
+        try: self.this.append(this)
+        except: self.this = this
+    __swig_destroy__ = _driver.delete_floatBlob
+    __del__ = lambda self : None;
+floatBlob_swigregister = _driver.floatBlob_swigregister
+floatBlob_swigregister(floatBlob)
 
 # This file is compatible with both classic and new-style classes.
 

@@ -37,8 +37,7 @@ CUDNN_SRCS := src/neuralnet/loss_layer/cudnn_softmaxloss.cc \
 			  src/neuralnet/neuron_layer/cudnn_lrn.cc \
 			  src/neuralnet/neuron_layer/cudnn_convolution.cc
 
-PY_SRCS := tool/python/singa/driver_wrap.cxx \
-		   src/driver.cc
+PY_SRCS := tool/python/singa/driver_wrap.cxx 
 
 HDFS_SRCS := src/io/hdfsfile.cc \
 			 src/io/hdfsfile_store.cc
@@ -63,6 +62,7 @@ SINGA_SRCS := src/driver.cc \
               src/neuralnet/input_layer/record.cc \
               src/neuralnet/input_layer/deprecated.cc \
               src/neuralnet/input_layer/store.cc \
+              src/neuralnet/input_layer/dummy.cc \
               src/neuralnet/input_layer/rnn_label.cc \
               src/neuralnet/output_layer/accuracy.cc \
               src/neuralnet/output_layer/argsort.cc \

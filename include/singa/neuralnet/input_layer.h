@@ -200,6 +200,28 @@ class RNNLabelLayer : public InputLayer {
   void Setup(const LayerProto& proto, const vector<Layer*>& srclayers);
   void ComputeFeature(int flag, const vector<Layer*>& srclayers);
 };
+
+/**
+ * Dummy class for loading data from anywhere.
+ */
+class DummyInputLayer : virtual public InputLayer {
+ public:
+  DummyInputLayer();
+  void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override {};
+  void ComputeFeature(int flag, const vector<Layer*>& srclayers) override {};
+
+  /**
+   * Feed data to Layer
+   */
+  void Feed(int batchsize, vector<int> shape, vector<float>* data);
+
+  Layer* ToLayer(){
+	  return this;
+  }
+ protected:
+  int batchsize_ = 1;
+};
+
 /****************Deprecated layers******************/
 /**
  * @deprecated please use the StoreInputLayer.

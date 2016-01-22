@@ -25,19 +25,62 @@
 %include "std_vector.i"
 %include "std_string.i"
 %include "argcargv.i"
+%include "carrays.i"
+%array_class(float, floatArray);
+
 %apply (int ARGC, char **ARGV) { (int argc, char **argv)  }
 %{
 #include "singa/driver.h"
+#include "singa/neuralnet/neuralnet.h"
+#include "singa/neuralnet/layer.h"
+#include "singa/neuralnet/input_layer.h"
+#include "singa/utils/blob.h"
 %}
 
+namespace std {
+  %template(strVector) vector<string>;
+  %template(intVector) vector<int>;
+  %template(floatVector) vector<float>;
+  %template(layerVector) vector<singa::Layer*>;
+}
+
 namespace singa{
-using std::vector;
-class Driver{
-public:
-void Train(bool resume, const std::string job_conf);
-void Init(int argc, char **argv);
-void InitLog(char* arg);
-void Test(const std::string job_conf);
-};
+  class Driver{
+    public:
+    void Train(bool resume, const std::string job_conf);
+    void Init(int argc, char **argv);
+    void InitLog(char* arg);
+    void Test(const std::string job_conf);
+  };
+
+  class NeuralNet{
+    public:
+     static NeuralNet* CreateForTest(const std::string str);
+     void Load(const std::vector<std::string>& paths);
+     inline const std::vector<singa::Layer*>& layers();
+     inline const std::vector<singa::Layer*>& srclayers(const singa::Layer* layer);
+  };
+    
+  class DummyInputLayer{
+    public:
+      void Feed(int batchsize, std::vector<int> shape, std::vector<float>* data);
+      singa::Layer* ToLayer();
+  };
+
+  %nodefault Layer;
+  class Layer{
+    public:
+      virtual void ComputeFeature(int flag, const std::vector<singa::Layer*>& srclayers); 
+      virtual const singa::Blob<float>& data(const singa::Layer* from); 
+  };
+  
+
+  template <typename Dtype>
+  class Blob{
+    public:
+      inline Dtype* mutable_cpu_data(); 
+  };
+
+  %template(floatBlob) Blob<float>;
 }
 

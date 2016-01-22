@@ -35,11 +35,11 @@ def load_data(
       ):
 
   # using cifar10 dataset
-  data_dir = 'examples/cifar10'
-  path_train = data_dir + '/train_data.bin'
-  path_test  = data_dir + '/test_data.bin'
-  path_mean  = data_dir + '/image_mean.bin'
-  if workspace == None: workspace = data_dir
+  data_dir = 'examples/cifar10_py/data/out'
+  path_train = data_dir + '/train.bin'
+  path_test  = data_dir + '/test.bin'
+  path_mean  = data_dir + '/mean.bin'
+  if workspace == None: workspace ="examples/cifar10" 
 
   store = Store(path=path_train, mean_file=path_mean, backend=backend,
               random_skip=random, batchsize=batchsize,

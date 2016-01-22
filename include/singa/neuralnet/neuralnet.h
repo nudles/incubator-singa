@@ -58,6 +58,13 @@ class NeuralNet {
   static NeuralNet* Create(const NetProto& net_conf, Phase phase,
                            int npartitions);
 
+  /**
+   * Create for python binding, production test mode
+   *
+   */
+  static NeuralNet* CreateForTest(const string str);
+
+
   static const NetProto Unrolling(const NetProto& net_conf);
   /**
    * construct the net structure from protocol buffer.
@@ -66,6 +73,8 @@ class NeuralNet {
    */
   NeuralNet(NetProto net_conf, int num_partitions);
   ~NeuralNet();
+
+  NeuralNet(){}
   /**
    * Load net params from checkpoint fiels.
    * @param path checkpoint files
