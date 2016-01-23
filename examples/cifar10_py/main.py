@@ -168,7 +168,8 @@ def predict():
     if request.method == 'POST':
         file = request.files['image']
         if file and allowed_file(file.filename):
-            im = Image.open(file)
+            im = Image.open(file).convert("RGB")
+            im = imgtool.resize_to_center(im,size_)
             pixel = floatVector(pixel_length_) 
             byteArray = imgtool.toBin(im,size_)
             for i in range(pixel_length_):
@@ -250,10 +251,10 @@ def product(model):
 
 if __name__=='__main__':
     
-    print "please use -transfer -data -test -product to specify different task"
+    print "please use -transform -data -test -product to specify different task"
 
-    if "-transfer" in sys.argv:
-        total_record_num_=imgtool.transfer_img(input_folder_,temp_folder_,size_)
+    if "-transform" in sys.argv:
+        total_record_num_=imgtool.transform_img(input_folder_,temp_folder_,size_)
     if "-data" in sys.argv:
         label_list_=imgtool.generate_kvrecord_data(temp_folder_,
                 output_folder_,
