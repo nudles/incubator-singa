@@ -211,6 +211,8 @@ class Param {
    /**
     * @return num of parameters in this Param obj.
     */
+  inline const std::vector<int>& shape() const { return data_.shape(); }
+  //inline const std::vector<int>& shape() const { return std::vector<int> data_.shape()[0], data_.shape()[1]}; }
   inline int size() const { return data_.count(); }
   inline const Blob<float>& data() const { return data_; }
   inline Blob<float>* mutable_data() { return &data_; }

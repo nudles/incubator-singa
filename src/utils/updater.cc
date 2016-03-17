@@ -60,8 +60,8 @@ float StepLRGen::Get(int step) {
   // do not cast int to float
   int freq = proto_.step_conf().change_freq();
   float lr = proto_.base_lr() * pow(proto_.step_conf().gamma(), step / freq);
-  LOG_IF(INFO, step % freq == 0) << "Update learning rate to " << lr
-    << " @ step " << step;
+  // LOG_IF(INFO, step % freq == 0) << "Update learning rate to " << lr
+  //   << " @ step " << step;
   return lr;
 }
 
@@ -95,6 +95,23 @@ Updater* Updater::Create(const UpdaterProto& proto) {
   updater->Init(proto);
   return updater;
 }
+
+/**************** added for Python Binding ***************************/
+Updater* Updater::CreateUpdater(const string str) {
+  UpdaterProto conf;
+  conf.ParseFromString(str);
+  return Updater::Create(conf);
+}
+
+void Updater::UpdateParams(Updater* updater, Layer* layer, int step) {
+  float grad_scale = 1.0;
+  for (auto param : layer->GetParams()) { 
+      updater->Update(step, param, grad_scale);
+      param->set_version(param->version() + 1);
+  }
+}
+/***********************Python Binding end**************************/
+
 
 /***********************SGD with momentum******************************/
 void Updater::Init(const UpdaterProto& proto) {

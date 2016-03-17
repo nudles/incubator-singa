@@ -57,6 +57,8 @@ void InnerProductLayer::Setup(const LayerProto& conf,
 
 void InnerProductLayer::ComputeFeature(int flag,
     const vector<Layer*>& srclayers) {
+  //auto w = weight_->mutable_cpu_data();
+  //LOG(ERROR) << srclayers[0]->name() << " " << w[0];
   if (transpose_)
     MMDot(srclayers[0]->data(this), weight_->data(), &data_);
   else
@@ -83,5 +85,7 @@ void InnerProductLayer::ComputeGradient(int flag,
     else
       MMDot(grad_, weight_->data(), srclayers[0]->mutable_grad(this));
   }
+  //clee auto w = weight_->mutable_cpu_data();
+  //LOG(ERROR) << srclayers[0]->name() << " " << w[0];
 }
 }  // namespace singa

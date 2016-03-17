@@ -75,6 +75,7 @@ void Driver::Init(int argc, char **argv) {
   RegisterLayer<RNNLabelLayer, int>(kRNNLabel);
   RegisterLayer<OneHotLayer, int>(kOneHot);
   RegisterLayer<CharRNNOutputLayer, int>(kCharRNNOutput);
+  RegisterLayer<DummyInputLayer, int>(kDummyInput);
 
   // connection layers
   RegisterLayer<BridgeDstLayer, int>(kBridgeDst);
@@ -90,6 +91,7 @@ void Driver::Init(int argc, char **argv) {
   RegisterLayer<CConvolutionLayer, int>(kCConvolution);
   RegisterLayer<CPoolingLayer, int>(kCPooling);
   RegisterLayer<EmbeddingLayer, int>(kEmbedding);
+  RegisterLayer<ActivationLayer, int>(kActivation);
 
 #ifdef USE_CUDNN
   RegisterLayer<CudnnActivationLayer, int>(kCudnnActivation);

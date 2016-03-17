@@ -647,6 +647,7 @@ enum LayerType {
   kImagePreprocess = 101;
   kPrefetch = 102;
   kRecordInput = 103;
+  kDummyInput = 104;
   kLMDBData = 190;  // deprecated
   kLabel = 191;  // deprecated
   kMnist = 192;  // deprecated
@@ -676,6 +677,7 @@ enum LayerType {
   kSoftmax = 214;
   kGRU = 215;
   kEmbedding = 216;
+  kActivation = 217;
 
   // cudnn v3
   kCudnnConv = 250;
