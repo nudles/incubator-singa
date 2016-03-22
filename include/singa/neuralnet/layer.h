@@ -77,7 +77,6 @@ class Layer {
    */
   static Layer* CreateLayer(const string str);
   static void SetupLayer(Layer* layer, const string str, const vector<Layer*>& srclayers);
-  virtual void Feed(int batchsize, vector<int> shape, vector<float>* data, int op) {} 
 
   /**
    * Setup layer properties.
@@ -120,6 +119,7 @@ class Layer {
   virtual const std::vector<Param*> GetParams() const {
     return std::vector<Param*> {};
   }
+  virtual void SetParams(std::vector<Param*>) {}
   /**
    * Return the connection type between one neuron of this layer and its source
    * layer.

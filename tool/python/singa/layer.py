@@ -32,7 +32,9 @@ from singa.utils.utility import setval, generate_name
 from singa.utils.message import *
 from google.protobuf import text_format
 
-from singa.driver import Layer as SingaLayer, Updater as SingaUpdater, DummyInputLayer, intVector, floatVector, layerVector, paramVector, floatArray_frompointer
+from singa.driver import Layer as SingaLayer, Updater as SingaUpdater,\
+                         intVector, floatVector, layerVector,\
+                         paramVector, floatArray_frompointer, DummyLayer
 
 class Layer(object):
 
@@ -56,7 +58,12 @@ class Layer(object):
         self.srclayers = [] 
 
     def ComputeFeature(self, *srclys):
-        #print ' >> CompFeature()', self.layer.name, '# of srcs:', len(srclys)
+        ''' The method creates and sets up singa::Layer
+            and maintains its source layers
+            then call ComputeFeature for data transformation.
+
+            *srclys = (list)  // a list of source layers
+        '''
 
         # create singa::Layer and store srclayers 
         if self.singalayer == None:
@@ -65,15 +72,20 @@ class Layer(object):
             for i in range(len(srclys)):
                 self.srclayers.append(srclys[i])
                 self.singaSrclayerVector[i] = srclys[i].get_singalayer()
-
-            #print ' >> Setup', self.layer.name
+            # set up the layer
             SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), self.singaSrclayerVector)
 
         self.singalayer.ComputeFeature(1, self.singaSrclayerVector)
 
 
     def ComputeGradient(self, step, upd=None):
-        #print ' >> CompGradient()', self.layer.name, '# of srcs', len(self.srclayers)
+        ''' The method creates singa::Updater
+            and calls ComputeGradient for gradient computation
+            then updates the parameters.
+
+            step = (int)    // a training step
+            upd = (object)  // Updater object
+        '''
 
         # create singa::Updater
         assert upd != None, 'required Updater (see model.py)' 
@@ -82,26 +94,51 @@ class Layer(object):
 
         # call ComputeGradient of Singa
         self.singalayer.ComputeGradient(1, self.singaSrclayerVector)
-        SingaUpdater.UpdateParams(Layer.singaupdater, self.singalayer, step)
+
+        # update parameters
+        singaParams = self.singalayer.GetParams()
+        for p in singaParams:
+            Layer.singaupdater.Update(step, p, 1.0)
 
         # recursively call ComputeGradient of srclayers
+        #(TODO) what if there are multiple source layers???
         for sly in self.srclayers:
             if sly.srclayers != None:
                 sly.ComputeGradient(step, upd) 
 
     def GetParams(self):
-        params = self.singalayer.GetParams()
-        assert len(params) == 2, 'weight and bias'
-
-        weight_array = floatArray_frompointer(params[0].mutable_cpu_data())
-        weight = [ weight_array[i] for i in range(params[0].size()) ]
-        weight = numpy.array(weight).reshape(params[0].shape())
-
-        bias_array = floatArray_frompointer(params[1].mutable_cpu_data())
-        bias = [ bias_array[i] for i in range(params[1].size()) ]
-        bias = numpy.array(bias).reshape(1, params[1].shape()[0])
+        ''' The method gets parameter values
+            singaParams[0] for weight
+            singaParams[1] for bias
+        '''
+        singaParams = self.singalayer.GetParams()
+        assert len(singaParams) == 2, 'weight and bias'
+        # for weight
+        weight_array = floatArray_frompointer(singaParams[0].mutable_cpu_data())
+        weight = [ weight_array[i] for i in range(singaParams[0].size()) ]
+        weight = numpy.array(weight).reshape(singaParams[0].shape())
+        # for bias
+        bias_array = floatArray_frompointer(singaParams[1].mutable_cpu_data())
+        bias = [ bias_array[i] for i in range(singaParams[1].size()) ]
+        bias = numpy.array(bias).reshape(singaParams[1].shape()[0], 1)
 
         return weight, bias
+
+    def SetParams(self, *params):
+        ''' The method sets parameter values
+            params[0] for weight
+            params[1] for bias
+        '''
+        singaParams = self.singalayer.GetParams()
+        import pb2.common_pb2 as cm
+        for k in range(len(params)):
+            bp = cm.BlobProto()
+            bp.shape.append(int(params[k].shape[0]))
+            bp.shape.append(int(params[k].shape[1]))
+            for i in range(params[k].shape[0]):
+                for j in range(params[k].shape[1]):
+                    bp.data.append(params[k][i,j])
+            singaParams[k].FromProto(bp.SerializeToString())
 
     def GetData(self):
         blobptr = self.singalayer.data(self.singalayer)
@@ -120,33 +157,42 @@ class Layer(object):
 class Dummy(object):
 
     def __init__(self):
+        self.is_datalayer = True
         self.srclayers = None 
+        self.singalayer = None
 
-        kwargs = {'name':'dummy', 'type':kDummyInput}
+        kwargs = {'name':'dummy', 'type':kDummy}
         self.layer = Message('Layer', **kwargs).proto
-        self.singalayer = SingaLayer.CreateLayer(self.layer.SerializeToString())  
-        SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), layerVector(0))
 
     def SetData(self, data, nb_channel=1, is_label=0):
-        #print ' >> SetData', data.shape
+        ''' Create and Setup singa::DummyLayer for input data
+            Insert data using Feed()
+        '''
+
         batchsize, hdim = data.shape
         datasize = batchsize * hdim
+        imgsize = int(numpy.sqrt(hdim/nb_channel)) 
+        shapeVector = [batchsize, nb_channel, imgsize, imgsize] 
+
+        # create and setup the layer
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=shapeVector)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+        # feed input data
         data = data.astype(numpy.float) 
-        dummyData = floatVector(datasize)
+        dataVector = floatVector(datasize)
         k = 0
         for i in range(batchsize):
             for j in range(hdim):
-                dummyData[k] = data[i,j]
+                dataVector[k] = data[i,j]
                 k += 1
-
-        shape = intVector(3)  
-        shape[0] = nb_channel 
-        shape[1] = int(numpy.sqrt(hdim/nb_channel)) 
-        shape[2] = shape[1] 
-        self.singalayer.Feed(batchsize, shape, dummyData, is_label)
+        self.singalayer.Feed(shapeVector, dataVector, is_label)
 
     def get_singalayer(self):
-        return self.singalayer
+        return self.singalayer.ToLayer()
 
 
 class Data(Layer):

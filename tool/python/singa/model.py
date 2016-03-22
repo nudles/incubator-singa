@@ -344,6 +344,19 @@ class Model(object):
                 #net.layer[i].activation_conf.type = STANH
             net.layer[i].type = cudnn_ly_type
 
+    def show(self):
+        for ly in self.jobconf.neuralnet.layer:
+            print layer(ly.name)
+
+    def layer_by_id(self, k):
+        return self.jobconf.neuralnet.layer[k]
+
+    def layer_by_name(self, name):
+        return self.layers[k]
+
+    def size(self):
+        return len(self.jobconf.neuralnet.layer)
+
 class Energy(Model):
     ''' energy model
     '''

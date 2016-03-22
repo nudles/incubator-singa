@@ -33,12 +33,13 @@
 #include "singa/driver.h"
 #include "singa/neuralnet/neuralnet.h"
 #include "singa/neuralnet/layer.h"
-#include "singa/neuralnet/input_layer.h"
+#include "singa/neuralnet/neuron_layer.h"
 #include "singa/neuralnet/loss_layer.h"
 #include "singa/utils/blob.h"
 #include "singa/utils/param.h"
 #include "singa/utils/updater.h"
 #include "singa/proto/job.pb.h"
+#include "singa/proto/common.pb.h"
 %}
 
 namespace std {
@@ -58,19 +59,20 @@ namespace singa{
     void Test(const std::string job_conf);
   };
 
-  /*
   class NeuralNet{
     public:
-     static NeuralNet* CreateForTest(const std::string str);
+     static NeuralNet* CreateFromStr(const std::string str);
      void Load(const std::vector<std::string>& paths);
      inline const std::vector<singa::Layer*>& layers();
      inline const std::vector<singa::Layer*>& srclayers(const singa::Layer* layer);
   };
-  */
     
-  class DummyInputLayer{
+  class DummyLayer{
     public:
-      void Feed(int batchsize, std::vector<int> shape, std::vector<float>* data, int op);
+      /* void Setup(const singa::LayerProto& proto, const std::vector<singa::Layer*>& srclayers);
+      */
+      void Setup(const std::string str, const std::vector<singa::Layer*>& srclayers);
+      void Feed(std::vector<int> shape, std::vector<float>* data, int op);
       singa::Layer* ToLayer();
   };
 
@@ -79,19 +81,19 @@ namespace singa{
     public:
       static singa::Layer* CreateLayer(const std::string str);
       static void SetupLayer(singa::Layer* layer, const std::string str, const std::vector<singa::Layer*>& srclayers);
-      virtual void Feed(int batchsize, std::vector<int> shape, std::vector<float>* data, int op);
       virtual void ComputeFeature(int flag, const std::vector<singa::Layer*>& srclayers); 
       virtual void ComputeGradient(int flag, const std::vector<singa::Layer*>& srclayers);
       virtual const singa::Blob<float>& data(const singa::Layer* from); 
       virtual const std::vector<singa::Param*> GetParams();
       virtual const std::string ToString(bool debug, int flag);
+      void SetParams(std::vector<singa::Param*> params);
   };
 
   %nodefault Updater;
   class Updater{
     public:
       static singa::Updater* CreateUpdater(const std::string str);
-      static void UpdateParams(singa::Updater* updater, singa::Layer* layer, int step);
+      virtual void Update(int step, singa::Param* param, float grad_scale);
   };
 
   template <typename Dtype>
@@ -108,6 +110,7 @@ namespace singa{
       inline int size();
       inline const std::vector<int>& shape();
       inline float* mutable_cpu_data();
+      void FromProto(const std::string str);
   };
 
   %template(floatBlob) Blob<float>;

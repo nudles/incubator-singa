@@ -67,56 +67,41 @@ d.Init(sys.argv)
 
 input = Dummy()
 label = Dummy()
-'''
-(TODO) clee: need to think ... can we do this???
-inner1 = Dense(2500, init='uniform', activation='stanh')
-inner2 = Dense(2000, init='uniform', activation='stanh')
-inner3 = Dense(1000, init='uniform', activation='stanh')
-inner4 = Dense(500, init='uniform', activation='stanh')
-inner5 = Dense(10, init='uniform', activation='softmax')
-'''
-inner1 = Dense(2500, init='uniform')
-inner2 = Dense(2000, init='uniform')
-inner3 = Dense(1500, init='uniform')
-inner4 = Dense(1000, init='uniform')
-inner5 = Dense(500, init='uniform')
-inner6 = Dense(10, init='uniform')
-act1 = Activation('stanh')
-act2 = Activation('stanh')
-act3 = Activation('stanh')
-act4 = Activation('stanh')
-act5 = Activation('stanh')
+
+nn = [] # neural net (hidden layers)
+nn.append(Dense(2500, init='uniform'))
+nn.append(Activation('stanh'))
+nn.append(Dense(2000, init='uniform'))
+nn.append(Activation('stanh'))
+nn.append(Dense(1500, init='uniform'))
+nn.append(Activation('stanh'))
+nn.append(Dense(1000, init='uniform'))
+nn.append(Activation('stanh'))
+nn.append(Dense(500, init='uniform'))
+nn.append(Activation('stanh'))
+nn.append(Dense(10, init='uniform'))
 loss = Loss('softmaxloss')
 
 sgd = SGD(lr=0.001, lr_type='step')
 
 #-------------------------------------------------------------------
-x, y = load_dataset()
-
 print '[Start training]'
 batchsize = 64 
 disp_freq = 10
+
+x, y = load_dataset()
 
 for i in range(x.shape[0] / batchsize):
     xb, yb = x[i*batchsize:(i+1)*batchsize,:], y[i*batchsize:(i+1)*batchsize,:]
     input.SetData(xb)
     label.SetData(yb, is_label=1)
-    inner1.ComputeFeature(input)
-    act1.ComputeFeature(inner1)
-    inner2.ComputeFeature(act1)
-    act2.ComputeFeature(inner2)
-    inner3.ComputeFeature(act2)
-    act3.ComputeFeature(inner3)
-    inner4.ComputeFeature(act3)
-    act4.ComputeFeature(inner4)
-    inner5.ComputeFeature(act4)
-    act5.ComputeFeature(inner5)
-    inner6.ComputeFeature(act5)
-    #w6, b6 = inner6.GetParams()
-    #d6 = inner6.GetData()
-    loss.ComputeFeature(inner6, label)
+    for h in range(len(nn)):
+        if h == 0:
+            nn[h].ComputeFeature(input)
+        else:
+            nn[h].ComputeFeature(nn[h-1])
+    loss.ComputeFeature(nn[-1], label)
     if (i+1)%disp_freq == 0:
         print '  Step {:>3}: '.format(i+1),
         loss.display()
-
     loss.ComputeGradient(i+1, sgd)

@@ -102,14 +102,6 @@ Updater* Updater::CreateUpdater(const string str) {
   conf.ParseFromString(str);
   return Updater::Create(conf);
 }
-
-void Updater::UpdateParams(Updater* updater, Layer* layer, int step) {
-  float grad_scale = 1.0;
-  for (auto param : layer->GetParams()) { 
-      updater->Update(step, param, grad_scale);
-      param->set_version(param->version() + 1);
-  }
-}
 /***********************Python Binding end**************************/
 
 

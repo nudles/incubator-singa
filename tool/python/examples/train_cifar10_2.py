@@ -77,24 +77,21 @@ d.Init(sys.argv)
 input = Dummy()
 label = Dummy()
 
-conv1 = Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2)
-pool1 = MaxPooling2D(pool_size=(3,3), stride=2)
-act1 = Activation('relu')
-lrn1 = LRN2D(3, alpha=0.00005, beta=0.75)
+nn = [] # neural net (hidden layers)
+nn.append(Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2))
+nn.append(MaxPooling2D(pool_size=(3,3), stride=2))
+nn.append(Activation('relu'))
+nn.append(LRN2D(3, alpha=0.00005, beta=0.75))
+nn.append(Convolution2D(32, 5, 1, 2, b_lr=2))
+nn.append(Activation('relu'))
+nn.append(AvgPooling2D(pool_size=(3,3), stride=2))
+nn.append(LRN2D(3, alpha=0.00005, beta=0.75))
+nn.append(Convolution2D(64, 5, 1, 2))
+nn.append(Activation('relu'))
+nn.append(AvgPooling2D(pool_size=(3,3), stride=2))
+nn.append(Dense(10, w_wd=250, b_lr=2, b_wd=0))
 
-conv2 = Convolution2D(32, 5, 1, 2, b_lr=2)
-act2 = Activation('relu')
-pool2 = AvgPooling2D(pool_size=(3,3), stride=2)
-lrn2 = LRN2D(3, alpha=0.00005, beta=0.75)
-
-conv3 = Convolution2D(64, 5, 1, 2)
-act3 = Activation('relu')
-pool3 = AvgPooling2D(pool_size=(3,3), stride=2)
-
-inner1 = Dense(10, w_wd=250, b_lr=2, b_wd=0)
-#act4 = Activation('softmax')
 loss = Loss('softmaxloss')
-
 sgd = SGD(decay=0.004, momentum=0.9, lr_type='manual', step=(0,60000,65000), step_lr=(0.001,0.0001,0.00001))
 
 #-------------------------------------------------------------------
@@ -113,22 +110,12 @@ for dataset_id in range(train_step / batchsize):
         input.SetData(xb, 3, 0)
         label.SetData(yb, 1, 1)
         
-        conv1.ComputeFeature(input)
-        pool1.ComputeFeature(conv1)
-        act1.ComputeFeature(pool1)
-        lrn1.ComputeFeature(act1)
-    
-        conv2.ComputeFeature(lrn1)
-        act2.ComputeFeature(conv2)
-        pool2.ComputeFeature(act2)
-        lrn2.ComputeFeature(pool2)
-    
-        conv3.ComputeFeature(lrn2)
-        act3.ComputeFeature(conv3)
-        pool3.ComputeFeature(act3)
-    
-        inner1.ComputeFeature(pool3)
-        loss.ComputeFeature(inner1, label)
+        for h in range(len(nn)):
+            if h == 0:
+                nn[h].ComputeFeature(input)
+            else:
+                nn[h].ComputeFeature(nn[h-1])
+        loss.ComputeFeature(nn[-1], label)
         if (i+1)%disp_freq == 0:
             print '  Step {:>3}: '.format(i+1 + dataset_id*(x.shape[0]/batchsize)),
             loss.display()

@@ -58,7 +58,7 @@ const NetProto NetConfPreprocess(const NetProto& conf) {
   return proto;
 }
 
-NeuralNet* NeuralNet::CreateForTest(const string str) {
+NeuralNet* NeuralNet::CreateFromStr(const string str) {
   NetProto net_conf;
   net_conf.ParseFromString(str);
   return NeuralNet::Create(net_conf,singa::kTest,1);

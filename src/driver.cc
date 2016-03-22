@@ -75,7 +75,6 @@ void Driver::Init(int argc, char **argv) {
   RegisterLayer<RNNLabelLayer, int>(kRNNLabel);
   RegisterLayer<OneHotLayer, int>(kOneHot);
   RegisterLayer<CharRNNOutputLayer, int>(kCharRNNOutput);
-  RegisterLayer<DummyInputLayer, int>(kDummyInput);
 
   // connection layers
   RegisterLayer<BridgeDstLayer, int>(kBridgeDst);

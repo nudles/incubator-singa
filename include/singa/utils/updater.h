@@ -93,7 +93,6 @@ class Updater {
 
   /* added for python binding */
   static Updater* CreateUpdater(const string str);
-  static void UpdateParams(Updater* updater, Layer* layer, int step);
   /* ------------------------ */
 
   static Updater* Create(const UpdaterProto& proto);
