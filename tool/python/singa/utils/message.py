@@ -23,6 +23,7 @@
 
 import sys, os
 from utility import *
+from google.protobuf import descriptor
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../pb2'))
 
 '''
@@ -60,12 +61,27 @@ class Message(object):
 
 enumDict_ = dict()
 
+#protobuf 2.5.0 get enum names
+def get_pb2_enum_list(module_obj):
+    enum_list=[]
+    for v in module_obj.__dict__.values():
+        if isinstance(v,descriptor.EnumDescriptor): 
+            enum_list.append(v.name) 
+    return enum_list
+
+
 #get all enum type list in the modules
 for module_obj in MODULE_LIST:
-    for enumtype in module_obj.DESCRIPTOR.enum_types_by_name:
-        tempDict = enumDict_[enumtype] = dict()
-        for name in getattr(module_obj, enumtype).DESCRIPTOR.values_by_name:
-            tempDict[name[1:].lower()] = getattr(module_obj, name)
+    if module_obj.DESCRIPTOR.enum_types_by_name:
+        for enumtype in module_obj.DESCRIPTOR.enum_types_by_name:
+            tempDict = enumDict_[enumtype] = dict()
+            for name in getattr(module_obj, enumtype).DESCRIPTOR.values_by_name:
+                tempDict[name[1:].lower()] = getattr(module_obj, name)
+    else:
+       for enumtype in get_pb2_enum_list(module_obj):
+            tempDict = enumDict_[enumtype] = dict()
+            for name in getattr(module_obj, enumtype).DESCRIPTOR.values_by_name:
+                tempDict[name[1:].lower()] = getattr(module_obj, name)
 
 def make_function(enumtype):
     def _function(key):
@@ -76,5 +92,12 @@ current_module = sys.modules[__name__]
 
 #def all the enumtypes
 for module_obj in MODULE_LIST:
-    for enumtype in module_obj.DESCRIPTOR.enum_types_by_name:
-        setattr(current_module, "enum"+enumtype, make_function(enumtype))
+    #protobuf 2.6.0
+    if module_obj.DESCRIPTOR.enum_types_by_name:
+        for enumtype in module_obj.DESCRIPTOR.enum_types_by_name:
+            setattr(current_module, "enum"+enumtype, make_function(enumtype))
+    #protobuf 2.5.0
+    else:
+        for enumtype in get_pb2_enum_list(module_obj):
+            setattr(current_module, "enum"+enumtype, make_function(enumtype))
+

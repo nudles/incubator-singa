@@ -518,10 +518,6 @@ message LRNProto {
 message PoolingProto {
   // The kernel size (square)
   optional int32 kernel= 1 [default = 3];
-  enum PoolMethod {
-    MAX = 0;
-    AVG = 1;
-  }
   // The pooling method
   optional PoolMethod pool = 30 [default = MAX];
   // The padding size
@@ -788,3 +784,9 @@ enum UnrollConnType {
   // customized connection type defined by src_conn
   kUnrollCustomized = 4;
 }
+
+enum PoolMethod {
+  MAX = 0;
+  AVG = 1;
+}
+

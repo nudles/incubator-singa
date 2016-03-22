@@ -82,3 +82,8 @@ def setval(proto, **kwargs):
                     fattr.MergeFrom(val)
                 else:
                     setattr(proto, key, val)
+
+def blob_to_numpy(blob):
+    '''TODO This method transform blob data to python numpy array 
+    '''
+    pass

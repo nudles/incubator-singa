@@ -93,7 +93,7 @@ class SingaScheduler: public mesos::Scheduler {
           if (hdfsExists(hdfs_handle_, SINGA_CONFIG) != 0)
             LOG(ERROR) << SINGA_CONFIG << " is not found on HDFS. Please use -singa_conf flag to upload the file";
         } else {
-          LOG(ERROR) << "Failed to connect to HDFS";
+          LOG(ERROR) << "Failed to connect to HDFS"<< namenode;
         }
         ReadProtoFromTextFile(job_conf_file_.c_str(), &job_conf_);
     }
@@ -110,7 +110,7 @@ class SingaScheduler: public mesos::Scheduler {
       : job_conf_file_(job_conf_file), nhosts_(0), namenode_(namenode), is_running_(false), job_counter_(jc), task_counter_(0) {
         hdfs_handle_ = hdfs_connect(namenode);
         if (!hdfs_handle_ || !hdfs_overwrite(hdfs_handle_, SINGA_CONFIG, singa_conf))
-          LOG(ERROR) << "Failed to connect to HDFS";
+          LOG(ERROR) << "Failed to connect to HDFS"<< namenode;
 
         ReadProtoFromTextFile(job_conf_file_.c_str(), &job_conf_);
       }
@@ -192,6 +192,7 @@ class SingaScheduler: public mesos::Scheduler {
         // write job_conf_file_ to /singa/job_id/job.conf
         char path[512];
         snprintf(path, 512, "/singa/%d/job.conf", job_counter_);
+	LOG(INFO) << path <<std::endl;
         hdfs_overwrite(hdfs_handle_, path, job_conf_file_);
 
         // launch tasks
@@ -277,6 +278,7 @@ class SingaScheduler: public mesos::Scheduler {
       int idx = path.find_first_of(":");
       string host = path.substr(0, idx);
       int port = atoi(path.substr(idx+1).c_str());
+	LOG(ERROR)<<host<<port;
       return hdfsConnect(host.c_str(), port);
     }
 
@@ -376,7 +378,7 @@ class SingaScheduler: public mesos::Scheduler {
 
 int main(int argc, char** argv) {
   FLAGS_logtostderr = 1;
-  google::InitGoogleLogging(argv[0]); 
+  //google::InitGoogleLogging(argv[0]); 
   int status = mesos::DRIVER_RUNNING;
   SingaScheduler *scheduler;
   if (!(argc == 2 || argc == 4 || argc == 6)) {

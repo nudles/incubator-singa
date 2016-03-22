@@ -245,13 +245,13 @@ function install_opencv()
 
 function install_protobuf()
 {
-	if [ ! -e "protobuf-2.6.0.tar.gz" ]
+	if [ ! -e "protobuf-2.5.0.tar.gz" ]
 	then
-		wget http://www.comp.nus.edu.sg/~dbsystem/singa/assets/file/thirdparty/protobuf-2.6.0.tar.gz;
+		wget http://www.comp.nus.edu.sg/~dbsystem/singa/assets/file/thirdparty/protobuf-2.5.0.tar.gz;
 	fi
 
-	rm -rf protobuf-2.6.0;
-	tar zxvf protobuf-2.6.0.tar.gz && cd protobuf-2.6.0;
+	rm -rf protobuf-2.5.0;
+	tar zxvf protobuf-2.5.0.tar.gz && cd protobuf-2.5.0;
 
 	if [ $# == 1 ]
 		then

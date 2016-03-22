@@ -70,7 +70,7 @@ validate_rate_=0.0
 
 #training settings
 model_name_="cifar10-cnn"
-workspace_="examples/cifar10_py"
+workspace_="/home/aaron/Projects/incubator-singa/examples/cifar10_mesos"
 batch_size_=64
 check_point_path_=workspace_+"/checkpoint/step1000-worker0"
 
@@ -257,28 +257,7 @@ def product(model):
 
 if __name__=='__main__':
     
-    print "please use -transform -data -test -product to specify different task"
-
-    if "-transform" in sys.argv:
-        total_record_num_=imgtool.transform_img(input_folder_,temp_folder_,size_)
-    if "-data" in sys.argv:
-        label_list_=imgtool.generate_kvrecord_data(temp_folder_,
-                output_folder_,
-                size_,     
-                train_num=int(total_record_num_*train_rate_),
-                test_num=int(total_record_num_*test_rate_),
-                validate_num=int(total_record_num_*validate_rate_),
-                meta_file_name=meta_file_name_,
-                train_bin_file_name=train_bin_file_name_,
-                test_bin_file_name=test_bin_file_name_,
-                validate_bin_file_name=validate_bin_file_name_,
-                mean_bin_file_name=mean_bin_file_name_
-            )
-        label_num_=len(label_list_)
-    model=buildModel(sys.argv)
-    if "-train" in sys.argv:
-        train(model)
-    elif "-test" in sys.argv:
-        test(model)
-    elif "-product" in sys.argv:
-        product(model)
+   sys.argv.append("-singa_conf")
+   sys.argv.append("/home/aaron/Projects/incubator-singa/conf/singa.conf")
+   model=buildModel(sys.argv)
+   product(model)

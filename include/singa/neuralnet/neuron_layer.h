@@ -269,7 +269,7 @@ class PoolingLayer : public NeuronLayer {
   int kernel_x_, pad_x_, stride_x_;
   int kernel_y_, pad_y_, stride_y_;
   int batchsize_, channels_, height_, width_, pooled_height_, pooled_width_;
-  PoolingProto_PoolMethod pool_;
+  PoolMethod pool_;
 };
 /**
  * Use book-keeping for BP following Caffe's pooling implementation
