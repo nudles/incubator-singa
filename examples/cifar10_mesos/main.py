@@ -36,9 +36,13 @@ current_path_ = os.path.dirname(__file__)
 singa_root_=os.path.abspath(os.path.join(current_path_,'../..'))
 
 #data prepare settings
-input_folder_=os.path.abspath(os.path.join(current_path_,"data/raw"))
-output_folder_=os.path.abspath(os.path.join(current_path_,"data/out"))
-temp_folder_=os.path.abspath(os.path.join(current_path_,"data/temp"))
+#input_folder_=os.path.abspath(os.path.join(current_path_,"data/raw"))
+#output_folder_=os.path.abspath(os.path.join(current_path_,"data/out"))
+#temp_folder_=os.path.abspath(os.path.join(current_path_,"data/temp"))
+
+input_folder_ = "/workspace/raw"
+output_folder_ = "/workspace/out"
+temp_folder_ = "/workspace/temp"
 
 meta_file_name_="meta.txt"
 train_bin_file_name_="train.bin"
@@ -70,7 +74,7 @@ validate_rate_=0.0
 
 #training settings
 model_name_="cifar10-cnn"
-workspace_="/home/aaron/Projects/incubator-singa/examples/cifar10_mesos"
+workspace_="/workspace"
 batch_size_=64
 check_point_path_=workspace_+"/checkpoint/step1000-worker0"
 
@@ -258,6 +262,6 @@ def product(model):
 if __name__=='__main__':
     
    sys.argv.append("-singa_conf")
-   sys.argv.append("/home/aaron/Projects/incubator-singa/conf/singa.conf")
+   sys.argv.append("/usr/src/incubator-singa/conf/singa.conf")
    model=buildModel(sys.argv)
    product(model)
