@@ -260,6 +260,8 @@ def product(model):
 
 
 if __name__=='__main__':
+
+   app.run(host='0.0.0.0', port=80)
     
    sys.argv.append("-singa_conf")
    sys.argv.append("/usr/src/incubator-singa/conf/singa.conf")
