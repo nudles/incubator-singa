@@ -48,7 +48,7 @@ def load_dataset(did=1):
        3072 pixels are  3 channels of a 32x32 image
     '''
     print '[Loading CIFAR10 dataset]', did
-    dataset_dir_ = singa_root_ + "/examples/cifar10/cifar-10-batches-bin"
+    dataset_dir_ = "/workspace/cifar-10-batches-bin"
     fname_train_data = dataset_dir_ + "/data_batch_{}.bin".format(did)
     
     nb_samples = 10000
@@ -64,7 +64,7 @@ def load_dataset(did=1):
     return x, y
 
 def get_labellist():
-    dataset_dir_ = singa_root_ + "/examples/cifar10/cifar-10-batches-bin"
+    dataset_dir_ = "/workspace/cifar-10-batches-bin"
     fname_label_list = dataset_dir_ + "/batches.meta.txt"
     label_list_ = np.genfromtxt(fname_label_list, dtype=str)
     return label_list_
