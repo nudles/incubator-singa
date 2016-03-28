@@ -33,6 +33,7 @@
 #include "singa/driver.h"
 #include "singa/neuralnet/neuralnet.h"
 #include "singa/neuralnet/layer.h"
+#include "singa/neuralnet/input_layer.h"
 #include "singa/neuralnet/neuron_layer.h"
 #include "singa/neuralnet/loss_layer.h"
 #include "singa/utils/blob.h"

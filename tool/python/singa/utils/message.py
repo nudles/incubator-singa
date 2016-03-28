@@ -86,4 +86,3 @@ for module_obj in MODULE_LIST:
         if isinstance(attrs[1],EnumTypeWrapper):
             enumTypeName=attrs[0]
             setattr(current_module, "enum"+enumTypeName, make_function(enumTypeName))
-

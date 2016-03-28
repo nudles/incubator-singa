@@ -325,7 +325,7 @@ class MaxPooling2D(Layer):
                'currently pool size should be square in Singa'
         super(MaxPooling2D, self).__init__(name=generate_name('pool'),
                                            type=kCPooling, **kwargs)
-        fields = {'pool' : PoolingProto().MAX,
+        fields = {'pool' : MAX,
                   'kernel' : pool_size[0],
                   'stride' : stride,
                   'pad' : 0 if ignore_border else 1}
@@ -351,8 +351,8 @@ class AvgPooling2D(Layer):
                'currently pool size should be square in Singa'
         super(AvgPooling2D, self).__init__(name=generate_name('pool'),
                                            type=kCPooling, **kwargs)
-        self.layer.pooling_conf.pool = PoolingProto().AVG
-        fields = {'pool' : PoolingProto().AVG,
+        self.layer.pooling_conf.pool = AVG
+        fields = {'pool' : AVG,
                   'kernel' : pool_size[0],
                   'stride' : stride,
                   'pad' : 0 if ignore_border else 1}

@@ -89,3 +89,8 @@ def swap32(x):
             ((x <<  8) & 0x00FF0000) |
             ((x >>  8) & 0x0000FF00) |
             ((x >> 24) & 0x000000FF))
+
+def blob_to_numpy(blob):
+    '''TODO This method transform blob data to python numpy array 
+    '''
+    pass
