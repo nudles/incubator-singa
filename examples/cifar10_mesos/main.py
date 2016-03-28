@@ -241,7 +241,7 @@ def product(model):
     #register layers
     d = Driver()
     d.Init(sys.argv)
-    net_ = NeuralNet.CreateForTest(model.jobconf.neuralnet.SerializeToString())
+    net_ = NeuralNet.CreateFromStr(model.jobconf.neuralnet.SerializeToString())
 
    
     pixel_length_ = 3*size_[0]*size_[1]
