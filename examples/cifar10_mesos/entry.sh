@@ -8,4 +8,5 @@ if [ $2 -eq '2' ]; then
 else
   cd /usr/src/incubator-singa/
   python tool/python/examples/train_cifar10.py
+  wait
 fi
