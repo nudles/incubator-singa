@@ -74,7 +74,6 @@ class NeuralNet {
   NeuralNet(NetProto net_conf, int num_partitions);
   ~NeuralNet();
 
-  NeuralNet(){}
   /**
    * Load net params from checkpoint fiels.
    * @param path checkpoint files
