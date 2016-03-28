@@ -3,7 +3,7 @@ cd /workspace
 wget $1
 tar zxf *.tar.gz
 cd /usr/src/incubator-singa/examples/cifar10_mesos/
-if [$2 -eq '2' ]; then
+if [ $2 -eq '2' ]; then
   python main.py
 else
   cd /usr/src/incubator-singa/
