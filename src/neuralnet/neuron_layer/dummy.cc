@@ -92,6 +92,10 @@ void DummyLayer::Feed(vector<int> shape, vector<float>* data, int op){
       //shape.insert(shape.begin(),batchsize);
       data_.Reshape(shape);
       */
+      //reshape data
+      data_.Reshape(shape);
+      CHECK_EQ(data_.count(), data->size());
+
       int size = data->size();
       float* ptr = data_.mutable_cpu_data();
       for (int i = 0; i< size; i++) { 

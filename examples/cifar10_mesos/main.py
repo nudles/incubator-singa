@@ -187,11 +187,12 @@ def predict():
 
             #dummy data Layer
             
-            shape = intVector(3)
-            shape[0]=3
-            shape[1]=size_[0]
-            shape[2]=size_[1]
-            dummy_.Feed(1,shape,pixel)
+            shape = intVector(4)
+            shape[0]=1
+            shape[1]=3
+            shape[2]=size_[0]
+            shape[3]=size_[1]
+            dummy_.Feed(shape,pixel,0)
 
             #checkpoint_paths =getattr(m.jobconf, 'checkpoint_path')
             checkpoint_paths = strVector(1)
