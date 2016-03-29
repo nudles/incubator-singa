@@ -53,9 +53,25 @@ class Layer(object):
 
         # layer connectivity is set in Model.build()
         self.is_datalayer = False
-
         self.singalayer = None
         self.srclayers = [] 
+
+        # set src for Rafiki
+        if 'src' in kwargs:
+            self.src = kwargs['src']
+        else:
+            self.src = None
+
+    def setup(self, srclys):
+        # create singa::Layer and store srclayers 
+        if self.singalayer == None:
+            self.singalayer = SingaLayer.CreateLayer(self.layer.SerializeToString())  
+            self.singaSrclayerVector = layerVector(len(srclys)) 
+            for i in range(len(srclys)):
+                self.srclayers.append(srclys[i])
+                self.singaSrclayerVector[i] = srclys[i].get_singalayer()
+            # set up the layer
+            SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), self.singaSrclayerVector)
 
     def ComputeFeature(self, *srclys):
         ''' The method creates and sets up singa::Layer
@@ -67,6 +83,8 @@ class Layer(object):
 
         # create singa::Layer and store srclayers 
         if self.singalayer == None:
+            if self.src != None:
+                srclys = self.src
             self.singalayer = SingaLayer.CreateLayer(self.layer.SerializeToString())  
             self.singaSrclayerVector = layerVector(len(srclys)) 
             for i in range(len(srclys)):
@@ -76,7 +94,6 @@ class Layer(object):
             SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), self.singaSrclayerVector)
 
         self.singalayer.ComputeFeature(1, self.singaSrclayerVector)
-
 
     def ComputeGradient(self, step, upd=None):
         ''' The method creates singa::Updater
@@ -156,15 +173,61 @@ class Layer(object):
 
 class Dummy(object):
 
-    def __init__(self):
+    def __init__(self, shape=[], path='', dtype='', src=[]):
+        ''' Dummy layer is used for data layer
+            shape = (list)   // [# of samples, # of channels, img h, img w]
+            path  = (string) // path to dataset
+        '''
         self.is_datalayer = True
         self.srclayers = None 
         self.singalayer = None
 
+        # create layer proto for Dummy layer
         kwargs = {'name':'dummy', 'type':kDummy}
         self.layer = Message('Layer', **kwargs).proto
 
-    def SetData(self, data, nb_channel=1, is_label=0):
+        # if dataset path is not specified, skip
+        # otherwise, load dataset
+        if path == '':
+            return
+
+        self.shape = shape
+        self.path = path
+        self.src = None
+        self.batch_index = 0
+
+        import numpy as np
+        nb_samples = shape[0]
+        nb_pixels = shape[1]
+        for i in range(len(shape)-2):
+            nb_pixels *= shape[i+2]  
+        if dtype=='byte': 
+            self.is_label = 0
+            d = np.fromfile(path, dtype=np.int8)
+        elif dtype=='int': 
+            self.is_label = 1
+            d = np.fromfile(path, dtype=np.int)
+        self.data = d.reshape(nb_samples, nb_pixels)
+
+
+    def setup(self, data_shape):
+        ''' Create and Setup singa Dummy layer
+            called by load_model_parameter
+        '''
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=data_shape)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+    def FetchData(self, batchsize):
+
+        d = self.data[self.batch_index*batchsize:(self.batch_index+1)*batchsize, :]
+        self.Feed(d, self.shape[1], self.is_label)
+        self.batch_index += 1
+
+
+    def Feed(self, data, nb_channel=1, is_label=0):
         ''' Create and Setup singa::DummyLayer for input data
             Insert data using Feed()
         '''
@@ -174,7 +237,7 @@ class Dummy(object):
         imgsize = int(numpy.sqrt(hdim/nb_channel)) 
         shapeVector = [batchsize, nb_channel, imgsize, imgsize] 
 
-        # create and setup the layer
+        # create and setup the dummy layer
         if self.singalayer == None:
             setval(self.layer.dummy_conf, input=True)
             setval(self.layer.dummy_conf, shape=shapeVector)
@@ -213,11 +276,11 @@ class Data(Layer):
         assert load != None, 'data type should be specified'
         if load == 'kData':
             super(Data, self).__init__(name=generate_name('data'),
-                                       user_type=load)
+                                       user_type=load, **kwargs)
         else:
             self.layer_type = enumLayerType(load)
             super(Data, self).__init__(name=generate_name('data'),
-                                       type=self.layer_type)
+                                       type=self.layer_type, **kwargs)
         self.is_datalayer = True
 
         # include/exclude
@@ -261,7 +324,7 @@ class Convolution2D(Layer):
 
         assert nb_filter > 0, 'nb_filter should be set as positive int'
         super(Convolution2D, self).__init__(name=generate_name('conv', 1),
-                                            type=kCConvolution)
+                                            type=kCConvolution, **kwargs)
         fields = {"num_filters":nb_filter}
         # for kernel
         if type(kernel) == int:
@@ -366,7 +429,7 @@ class LRN2D(Layer):
           size = (int)  // local size
         '''
 
-        super(LRN2D, self).__init__(name=generate_name('norm'), type=kLRN)
+        super(LRN2D, self).__init__(name=generate_name('norm'), type=kLRN, **kwargs)
         # required
         assert size != 0, 'local size should be set'
         self.layer.lrn_conf.local_size = size
@@ -375,20 +438,20 @@ class LRN2D(Layer):
 
 class Loss(Layer):
 
-    def __init__(self, lossname, topk=1):
+    def __init__(self, lossname, topk=1, **kwargs):
         '''
         required
           lossname = (string) // softmaxloss, euclideanloss
         '''
         self.layer_type = enumLayerType(lossname)
         super(Loss, self).__init__(name=generate_name(lossname),
-                                         type=self.layer_type)
+                                         type=self.layer_type, **kwargs)
         if lossname == 'softmaxloss':
             self.layer.softmaxloss_conf.topk = topk
 
 class Activation(Layer):
 
-    def __init__(self, activation='stanh'):
+    def __init__(self, activation='stanh', **kwargs):
         '''
         required
           activation = (string) // relu, sigmoid, tanh, stanh, softmax.
@@ -403,7 +466,7 @@ class Activation(Layer):
         elif activation == 'softmax':
             self.layer_type = kSoftmax
         super(Activation, self).__init__(name=generate_name(self.name),
-                                         type=self.layer_type)
+                                         type=self.layer_type, **kwargs)
         if activation == 'relu':
             self.layer.activation_conf.type = RELU
         elif activation == 'sigmoid':
@@ -426,19 +489,19 @@ class Dropout(Layer):
         self.name = 'dropout'
         self.layer_type = enumLayerType(self.name)
         super(Dropout, self).__init__(name=generate_name(self.name),
-                                      type=self.layer_type)
+                                      type=self.layer_type, **kwargs)
         self.layer.dropout_conf.dropout_ratio = ratio
 
 class Accuracy(Layer):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         '''
         '''
 
         self.name = 'accuracy'
         self.layer_type = enumLayerType(self.name)
         super(Accuracy, self).__init__(name=generate_name(self.name),
-                                       type=self.layer_type)
+                                       type=self.layer_type, **kwargs)
 
 class RGB(Layer):
 
@@ -554,7 +617,7 @@ class RBM(Layer):
         self.name = kwargs['name'] if 'name' in kwargs else 'RBMVis'
         self.layer_type = kwargs['type'] if 'type' in kwargs else kRBMVis
         super(RBM, self).__init__(name=generate_name(self.name,
-                                  withnumber=False), type=self.layer_type)
+                                  withnumber=False), type=self.layer_type, **kwargs)
         setval(self.layer.rbm_conf, hdim=self.out_dim[-1])
         if self.layer_type == kRBMHid and sampling != None:
             if sampling == 'gaussian':
