@@ -53,9 +53,19 @@ class Layer(object):
 
         # layer connectivity is set in Model.build()
         self.is_datalayer = False
-
         self.singalayer = None
         self.srclayers = [] 
+
+    def setup(self, *srclys):
+        # create singa::Layer and store srclayers 
+        if self.singalayer == None:
+            self.singalayer = SingaLayer.CreateLayer(self.layer.SerializeToString())  
+            self.singaSrclayerVector = layerVector(len(srclys)) 
+            for i in range(len(srclys)):
+                self.srclayers.append(srclys[i])
+                self.singaSrclayerVector[i] = srclys[i].get_singalayer()
+            # set up the layer
+            SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), self.singaSrclayerVector)
 
     def ComputeFeature(self, *srclys):
         ''' The method creates and sets up singa::Layer
@@ -164,7 +174,19 @@ class Dummy(object):
         kwargs = {'name':'dummy', 'type':kDummy}
         self.layer = Message('Layer', **kwargs).proto
 
-    def SetData(self, data, nb_channel=1, is_label=0):
+    def setup(self, data_shape):
+        ''' (TODO) assume to be 
+            data_shape: [64, 1, 28, 28] for mnist
+                        [100, 3, 32, 32] for cifar100
+        '''
+        # create and setup the layer
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=data_shape)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+    def Feed(self, data, nb_channel=1, is_label=0):
         ''' Create and Setup singa::DummyLayer for input data
             Insert data using Feed()
         '''
@@ -174,7 +196,7 @@ class Dummy(object):
         imgsize = int(numpy.sqrt(hdim/nb_channel)) 
         shapeVector = [batchsize, nb_channel, imgsize, imgsize] 
 
-        # create and setup the layer
+        # create and setup the dummy layer
         if self.singalayer == None:
             setval(self.layer.dummy_conf, input=True)
             setval(self.layer.dummy_conf, shape=shapeVector)

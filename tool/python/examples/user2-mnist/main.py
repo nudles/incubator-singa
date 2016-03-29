@@ -21,21 +21,24 @@
 #*
 #*************************************************************/
 
-import os, sys, string
+import os, sys
 import numpy as np
 
 current_path_ = os.path.dirname(__file__)
-singa_root_=os.path.abspath(os.path.join(current_path_,'../../..'))
+singa_root_=os.path.abspath(os.path.join(current_path_,'../../../..'))
 sys.path.append(os.path.join(singa_root_,'tool','python'))
 
+from model import neuralnet, loss, updater
 from singa.driver import Driver
 from singa.layer import *
-from singa.model import *
+from singa.model import save_model_parameter, load_model_parameter 
 from singa.utils.utility import swap32
-from google.protobuf.text_format import Merge
+
+#import md5
+#modelkey = md5.new('cifar10').hexdigest()
 
 '''
-Example of MLP with MNIST dataset
+Example of MLP with mnist dataset
 '''
 
 def load_dataset():
@@ -58,6 +61,7 @@ def load_dataset():
     y = y[4*2:] # skip header
     y = y.reshape(nb_samples, 1) 
     print '  label y:', y.shape
+    
     return x, y
 
 #-------------------------------------------------------------------
@@ -65,43 +69,52 @@ print '[Layer registration/declaration]'
 d = Driver()
 d.Init(sys.argv)
 
-input = Dummy()
-label = Dummy()
-
-nn = [] # neural net (hidden layers)
-nn.append(Dense(2500, init='uniform'))
-nn.append(Activation('stanh'))
-nn.append(Dense(2000, init='uniform'))
-nn.append(Activation('stanh'))
-nn.append(Dense(1500, init='uniform'))
-nn.append(Activation('stanh'))
-nn.append(Dense(1000, init='uniform'))
-nn.append(Activation('stanh'))
-nn.append(Dense(500, init='uniform'))
-nn.append(Activation('stanh'))
-nn.append(Dense(10, init='uniform'))
-loss = Loss('softmaxloss')
-
-sgd = SGD(lr=0.001, lr_type='step')
-
 #-------------------------------------------------------------------
 print '[Start training]'
 batchsize = 64 
 disp_freq = 10
 
+workspace = 'tool/python/examples/user2-mnist/' 
+checkpoint = 'step30-worker0'
+
+label = Dummy()
 x, y = load_dataset()
 
-for i in range(x.shape[0] / batchsize):
+imgsize = 28
+nb_channel = 1
+data_shape = [batchsize, nb_channel, imgsize, imgsize]
+load_model_parameter(workspace+checkpoint, neuralnet, data_shape)
+
+#for i in range(x.shape[0] / batchsize):
+for i in range(30):
     xb, yb = x[i*batchsize:(i+1)*batchsize,:], y[i*batchsize:(i+1)*batchsize,:]
-    input.SetData(xb)
-    label.SetData(yb, is_label=1)
-    for h in range(len(nn)):
-        if h == 0:
-            nn[h].ComputeFeature(input)
-        else:
-            nn[h].ComputeFeature(nn[h-1])
-    loss.ComputeFeature(nn[-1], label)
+
+    neuralnet[0].Feed(xb)
+    label.Feed(yb, 1, 1)
+        
+    for h in range(1, len(neuralnet)):
+        neuralnet[h].ComputeFeature(neuralnet[h-1])
+    loss.ComputeFeature(neuralnet[-1], label)
     if (i+1)%disp_freq == 0:
         print '  Step {:>3}: '.format(i+1),
         loss.display()
-    loss.ComputeGradient(i+1, sgd)
+    loss.ComputeGradient(i+1, updater)
+
+step_trained = 30
+save_model_parameter(step_trained, workspace, neuralnet)
+
+#--- test of loading    
+load_model_parameter(workspace+checkpoint, neuralnet)
+for i in range(30, 50):
+    xb, yb = x[i*batchsize:(i+1)*batchsize,:], y[i*batchsize:(i+1)*batchsize,:]
+
+    neuralnet[0].Feed(xb)
+    label.Feed(yb, 1, 1)
+        
+    for h in range(1, len(neuralnet)):
+        neuralnet[h].ComputeFeature(neuralnet[h-1])
+    loss.ComputeFeature(neuralnet[-1], label)
+    if (i+1)%disp_freq == 0:
+        print '  Step {:>3}: '.format(i+1),
+        loss.display()
+    loss.ComputeGradient(i+1, updater)

@@ -650,3 +650,24 @@ def SingaRun_script(filename='', execpath=''):
     #TODO better format to store the result??
     return resultDic
 
+def load_model_parameter(fin, neuralnet, data_shape=None):
+    print fin
+    from singa.driver import Worker
+    net = layerVector(len(neuralnet)-1)
+    neuralnet[0].setup(data_shape)
+    for i in range(1, len(neuralnet)): 
+        neuralnet[i].setup(neuralnet[i-1])
+        net[i-1] = neuralnet[i].singalayer
+    alg = Algorithm(type=enumAlgType('bp')).proto
+    w = Worker.CreateWorker(alg.SerializeToString())
+    w.InitNetParams(fin, net)
+
+def save_model_parameter(step, fout, neuralnet):
+
+    from singa.driver import Worker
+    net = layerVector(len(neuralnet)-1)
+    for i in range(1, len(neuralnet)): 
+        net[i-1] = neuralnet[i].singalayer
+    alg = Algorithm(type=enumAlgType('bp')).proto
+    w = Worker.CreateWorker(alg.SerializeToString())
+    w.Checkpoint(step, fout, net)
