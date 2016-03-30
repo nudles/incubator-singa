@@ -33,8 +33,8 @@ from singa.layer import *
 from singa.model import *
 from singa.utils.utility import swap32
 
-data1=Dummy(shape=[50000,3,32,32],path="tool/python/examples/data/out/train.bin",dtype='byte',src=[])
-data2=Dummy(shape=[50000,1],path="tool/python/examples/data/out/train.label.bin",dtype='int',src=[])
+data1=Dummy(shape=[50000,3,32,32],path="/home/aaron/work/workspace/data/out/train.bin",dtype='byte',src=[])
+data2=Dummy(shape=[50000,1],path="/home/aaron/work/workspace/data/out/train.label.bin",dtype='int',src=[])
 c1=Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2,src=[data1])
 p1=MaxPooling2D(pool_size=(3,3), stride=2,src=[c1])
 a1=Activation('relu',src=[p1])
@@ -53,4 +53,3 @@ neuralnet = [data1, data2, c1, p1, a1, l1, c2, a2, p2, l2, c3, a3, p3, d, loss]
 
 #algorithm
 updater = SGD(decay=0.004, momentum=0.9, lr_type='manual', step=(0,60000,65000), step_lr=(0.001,0.0001,0.00001))
-
