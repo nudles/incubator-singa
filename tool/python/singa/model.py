@@ -650,24 +650,45 @@ def SingaRun_script(filename='', execpath=''):
     #TODO better format to store the result??
     return resultDic
 
-def load_model_parameter(fin, neuralnet, data_shape=None):
-    print fin
+def load_model_parameter(fin, neuralnet, batchsize=1, data_shape=None):
+    hly_idx = 0
+    for i in range(len(neuralnet)): 
+        if neuralnet[i].is_datalayer:
+            if data_shape == None:
+                shape = neuralnet[i].shape
+                shape[0] = batchsize
+                neuralnet[i].setup(shape)
+            else:
+                neuralnet[i].setup(data_shape)
+        else:
+            hly_idx = i
+            break
+
+    net = layerVector(len(neuralnet)-hly_idx)
+    for i in range(hly_idx, len(neuralnet)): 
+        if neuralnet[i].src==None:
+            neuralnet[i].setup(neuralnet[i-1])
+        else:
+            neuralnet[i].setup(neuralnet[i].src)
+        net[i-hly_idx] = neuralnet[i].singalayer
+
     from singa.driver import Worker
-    net = layerVector(len(neuralnet)-1)
-    neuralnet[0].setup(data_shape)
-    for i in range(1, len(neuralnet)): 
-        neuralnet[i].setup(neuralnet[i-1])
-        net[i-1] = neuralnet[i].singalayer
     alg = Algorithm(type=enumAlgType('bp')).proto
     w = Worker.CreateWorker(alg.SerializeToString())
     w.InitNetParams(fin, net)
 
 def save_model_parameter(step, fout, neuralnet):
 
+    hly_idx = 0
+    for i in range(len(neuralnet)): 
+        if not neuralnet[i].is_datalayer:
+            hly_idx = i
+            break
+
     from singa.driver import Worker
-    net = layerVector(len(neuralnet)-1)
-    for i in range(1, len(neuralnet)): 
-        net[i-1] = neuralnet[i].singalayer
+    net = layerVector(len(neuralnet)-hly_idx)
+    for i in range(hly_idx, len(neuralnet)): 
+        net[i-hly_idx] = neuralnet[i].singalayer
     alg = Algorithm(type=enumAlgType('bp')).proto
     w = Worker.CreateWorker(alg.SerializeToString())
     w.Checkpoint(step, fout, net)

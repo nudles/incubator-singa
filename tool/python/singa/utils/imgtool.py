@@ -3,7 +3,7 @@ Created on Jan 8, 2016
 @author: aaron
 '''
 from PIL import Image
-import sys, glob, os, random, shutil, time
+import sys, glob, os, random, shutil, time, struct
 from . import kvstore
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../pb2'))
@@ -87,6 +87,130 @@ def transform_img(
     return count
 
                
+
+def generate_bin_data(
+                input_folder,
+                output_folder,
+                size ,     
+                train_num,
+                test_num,
+                validate_num,
+                meta_file_name="meta.txt",
+                train_bin_file_name="train.bin",
+                train_label_bin_file_name="train.label.bin",
+                test_bin_file_name="test.bin",
+                test_label_bin_file_name="test.label.bin",
+                validate_bin_file_name="validate.bin",
+                validate_label_bin_file_name="validate.label.bin",
+                mean_bin_file_name="mean.bin",
+                label_bin_file_name="label.bin",
+
+                      ):
+    try:
+        os.stat(output_folder)
+    except:
+        os.makedirs(output_folder)
+
+    print "Generate bin start at: "+time.strftime('%X %x %Z') 
+    meta_file = open(os.path.join(output_folder,meta_file_name), "w")
+
+    fileList=[]
+    labelList= []
+    label=0 #label begin from 1
+
+    #get all img file, the folder name is the label name
+    for d in os.listdir(input_folder):    
+        if os.path.isdir(os.path.join(input_folder,d)):
+            labelList.append((label,d))
+            for f in glob.glob(os.path.join(input_folder,d,"*.jpg")):
+                fileList.append((label,f))
+            label += 1
+
+    # disorder all the files
+    random.shuffle(fileList)
+
+    total = len(fileList)
+    print total,train_num,test_num,validate_num
+    assert total >= train_num+test_num+validate_num
+
+    train_file = open(os.path.join(output_folder,train_bin_file_name),"wb")    
+    train_label_file = open(os.path.join(output_folder,train_label_bin_file_name),"wb")    
+    validate_file = open(os.path.join(output_folder,validate_bin_file_name),"wb")    
+    validate_label_file = open(os.path.join(output_folder,validate_label_bin_file_name),"wb")    
+    test_file = open(os.path.join(output_folder,test_bin_file_name),"wb")    
+    test_label_file = open(os.path.join(output_folder,test_label_bin_file_name),"wb")    
+    mean_file = open(os.path.join(output_folder,mean_bin_file_name),"wb")    
+ 
+    count=0
+    trainCount=0
+    validateCount=0
+    testCount=0
+
+    # the expected image binary length
+    binaryLength=3*size[0]*size[1] 
+
+    meanData=[]
+    for i in range(0,binaryLength):
+        meanData.append(0.0)
+
+    #calculate mean
+    for (label,f) in fileList:    
+
+        count+=1
+        im =Image.open(f)
+        #the image size should be equal
+        assert im.size==size
+        binaryPixel=toBin(im,size)
+        if count <= train_num :
+            trainCount+=1
+            train_file.write(binaryPixel) 
+            train_label_file.write(kvstore.i2b(label))
+            #only caculate train data's mean value
+            for i in range(binaryLength):
+                meanData[i]+=binaryPixel[i]
+        elif count <= train_num+validate_num :
+            validateCount+=1
+            validate_label_file.write(kvstore.i2b(label))
+            validate_file.write(binaryPixel) 
+        elif count <= train_num+validate_num+test_num:
+            testCount+=1
+            test_label_file.write(kvstore.i2b(label))
+            test_file.write(binaryPixel) 
+	else:
+            break
+
+    for i in range(binaryLength):
+        meanData[i]/=trainCount
+
+    meanBinary=struct.pack("%sf" % binaryLength, *meanData)
+
+    mean_file.write(meanBinary)
+    mean_file.flush()
+    mean_file.close()
+     
+    train_file.flush()
+    train_file.close()
+    validate_file.flush()
+    validate_file.close()
+    test_file.flush()
+    test_file.close()
+
+    meta_file.write("image size: "+str(size[0])+"*"+str(size[1])+"\n")    
+    meta_file.write("total file num: "+str(count)+"\n")    
+    meta_file.write("train file num: "+str(trainCount)+"\n")
+    meta_file.write("validate file num: "+str(validateCount)+"\n")
+    meta_file.write("test file num: "+str(testCount)+"\n")
+    meta_file.write("label list:[\n")
+
+    for item in labelList:
+        meta_file.write("("+str(item[0])+",\""+item[1]+"\"),\n")
+    meta_file.write("]")
+    meta_file.flush()
+    meta_file.close()
+
+    print "end at: "+time.strftime('%X %x %Z')    
+
+    return labelList
 
 
 def generate_kvrecord_data(

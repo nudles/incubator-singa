@@ -33,22 +33,24 @@ from singa.layer import *
 from singa.model import *
 from singa.utils.utility import swap32
 
-input = Dummy()
+data1=Dummy(shape=[50000,3,32,32],path="tool/python/examples/data/out/train.bin",dtype='byte',src=[])
+data2=Dummy(shape=[50000,1],path="tool/python/examples/data/out/train.label.bin",dtype='int',src=[])
+c1=Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2,src=[data1])
+p1=MaxPooling2D(pool_size=(3,3), stride=2,src=[c1])
+a1=Activation('relu',src=[p1])
+l1=LRN2D(3, alpha=0.00005, beta=0.75,src=[a1])
+c2=Convolution2D(32, 5, 1, 2, b_lr=2,src=[l1])
+a2=Activation('relu',src=[c2])
+p2=AvgPooling2D(pool_size=(3,3), stride=2,src=[a2])
+l2=LRN2D(3, alpha=0.00005, beta=0.75,src=[p2])
+c3=Convolution2D(64, 5, 1, 2,src=[l2])
+a3=Activation('relu',src=[c3])
+p3=AvgPooling2D(pool_size=(3,3), stride=2,src=[a3])
+d=Dense(10, w_wd=250, b_lr=2, b_wd=0,src=[p3])
+loss=Loss('softmaxloss',src=[d,data2])
 
-neuralnet = [] # neural net (hidden layers)
-neuralnet.append(input)
-neuralnet.append(Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2))
-neuralnet.append(MaxPooling2D(pool_size=(3,3), stride=2))
-neuralnet.append(Activation('relu'))
-neuralnet.append(LRN2D(3, alpha=0.00005, beta=0.75))
-neuralnet.append(Convolution2D(32, 5, 1, 2, b_lr=2))
-neuralnet.append(Activation('relu'))
-neuralnet.append(AvgPooling2D(pool_size=(3,3), stride=2))
-neuralnet.append(LRN2D(3, alpha=0.00005, beta=0.75))
-neuralnet.append(Convolution2D(64, 5, 1, 2))
-neuralnet.append(Activation('relu'))
-neuralnet.append(AvgPooling2D(pool_size=(3,3), stride=2))
-neuralnet.append(Dense(10, w_wd=250, b_lr=2, b_wd=0))
+neuralnet = [data1, data2, c1, p1, a1, l1, c2, a2, p2, l2, c3, a3, p3, d, loss] 
 
-loss = Loss('softmaxloss')
+#algorithm
 updater = SGD(decay=0.004, momentum=0.9, lr_type='manual', step=(0,60000,65000), step_lr=(0.001,0.0001,0.00001))
+

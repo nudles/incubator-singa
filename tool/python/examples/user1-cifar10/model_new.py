@@ -35,7 +35,7 @@ from singa.utils.utility import swap32
 
 neuralnet = [] # neural net (hidden layers)
 #shape,inputfile,src
-neuralnet.append(data1=Dummy(shape=[10000,3,32,32],path="examples/cifar10/cifar-10-batches-bin",src=[]))
+neuralnet.append(data1=Dummy(shape=[10000,3,32,32],path="examples/cifar10/cifar-10-batches-bin.",src=[]))
 neuralnet.append(data2=Dummy(shape=[10000,1],path="tool/python/examples/datasets/cifar10_mean_image",src=[]))
 neuralnet.append(c1=Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2,src=[data1]))
 neuralnet.append(p1=MaxPooling2D(pool_size=(3,3), stride=2,src=[c1]))
