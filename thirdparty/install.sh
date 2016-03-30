@@ -245,32 +245,32 @@ function install_opencv()
 
 function install_protobuf()
 {
-	if [ ! -e "protobuf-2.6.0.tar.gz" ]
+	if [ ! -e "protobuf-2.5.0.tar.gz" ]
 	then
-		wget http://www.comp.nus.edu.sg/~dbsystem/singa/assets/file/thirdparty/protobuf-2.6.0.tar.gz;
+		wget http://www.comp.nus.edu.sg/~dbsystem/singa/assets/file/thirdparty/protobuf-2.5.0.tar.gz;
 	fi
 
-	rm -rf protobuf-2.6.0;
-	tar zxvf protobuf-2.6.0.tar.gz && cd protobuf-2.6.0;
+	rm -rf protobuf-2.5.0;
+	tar zxvf protobuf-2.5.0.tar.gz && cd protobuf-2.5.0;
 
 	if [ $# == 1 ]
 		then
 			echo "install protobuf in $1";
 			./configure --prefix=$1;
 			make && make install;
-			#cd python;
-			#python setup.py build;
-			#python setup.py install --prefix=$1;
-			#cd ..;
+			cd python;
+			python setup.py build;
+			python setup.py install --prefix=$1;
+			cd ..;
 		elif [ $# == 0 ]
 		then
 			echo "install protobuf in default path";
 			./configure;
 			make && sudo make install;
-			#cd python;
-			#python setup.py build;
-			#sudo python setup.py install;
-			#cd ..;
+			cd python;
+			python setup.py build;
+			sudo python setup.py install;
+			cd ..;
 		else
 			echo "wrong commands";
 	fi

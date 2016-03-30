@@ -22,10 +22,13 @@
 #ifndef SINGA_UTILS_UPDATER_H_
 #define SINGA_UTILS_UPDATER_H_
 
+#include <string>
 #include "singa/proto/job.pb.h"
 #include "singa/utils/param.h"
+#include "singa/neuralnet/layer.h"
 
 namespace singa {
+using std::string;
 /**
  * Base learning rate generator.
  *
@@ -87,6 +90,11 @@ class InvTLRGen : public LRGenerator {
  */
 class Updater {
  public:
+
+  /* added for python binding */
+  static Updater* CreateUpdater(const string str);
+  /* ------------------------ */
+
   static Updater* Create(const UpdaterProto& proto);
 
   virtual ~Updater() {}
@@ -125,19 +133,40 @@ class RMSPropUpdater : public Updater {
 
  protected:
   float rho_;
+  float delta_;
 };
 
-/*
 class AdaDeltaUpdater : public Updater {
  public:
-  virtual void Update(int step, Param* param, float grad_scale);
+  void Init(const UpdaterProto &proto) override;
+  void Update(int step, Param* param, float grad_scale) override;
 
  protected:
   float rho_;
   float delta_;
-  float weight_decay_;
 };
-*/
+
+class AdamUpdater : public Updater {
+  public:
+   void Init(const UpdaterProto &proto) override;
+   void Update(int step, Param* param, float grad_scale) override;
+
+  protected:
+   float beta1_;
+   float beta2_;
+   float delta_;
+};
+
+class AdamMaxUpdater : public Updater {
+  public:
+   void Init(const UpdaterProto &proto) override;
+   void Update(int step, Param* param, float grad_scale) override;
+
+  protected:
+   float beta1_;
+   float beta2_;
+   float delta_;
+};
 
 }  // namespace singa
 

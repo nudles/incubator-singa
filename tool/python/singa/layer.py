@@ -25,14 +25,20 @@
 This script includes Layer class and its subclasses that
 users can configure different types of layers for their model.
 '''
-
+import numpy
 from singa.parameter import Parameter, set_param_field
 from singa.initializations import get_init_values
 from singa.utils.utility import setval, generate_name
 from singa.utils.message import *
 from google.protobuf import text_format
 
+from singa.driver import Layer as SingaLayer, Updater as SingaUpdater,\
+                         intVector, floatVector, layerVector,\
+                         paramVector, floatArray_frompointer, DummyLayer
+
 class Layer(object):
+
+    singaupdater = None
 
     def __init__(self, **kwargs):
         '''
@@ -41,12 +47,175 @@ class Layer(object):
         '''
 
         self.layer = Message('Layer', **kwargs).proto
-        # required
+        # required field
         if not 'name' in kwargs:
             setval(self.layer, name=generate_name('layer', 1))
 
-        # srclayers are set in Model.build()
+        # layer connectivity is set in Model.build()
         self.is_datalayer = False
+        self.singalayer = None
+        self.srclayers = [] 
+
+    def setup(self, *srclys):
+        # create singa::Layer and store srclayers 
+        if self.singalayer == None:
+            self.singalayer = SingaLayer.CreateLayer(self.layer.SerializeToString())  
+            self.singaSrclayerVector = layerVector(len(srclys)) 
+            for i in range(len(srclys)):
+                self.srclayers.append(srclys[i])
+                self.singaSrclayerVector[i] = srclys[i].get_singalayer()
+            # set up the layer
+            SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), self.singaSrclayerVector)
+
+    def ComputeFeature(self, *srclys):
+        ''' The method creates and sets up singa::Layer
+            and maintains its source layers
+            then call ComputeFeature for data transformation.
+
+            *srclys = (list)  // a list of source layers
+        '''
+
+        # create singa::Layer and store srclayers 
+        if self.singalayer == None:
+            self.singalayer = SingaLayer.CreateLayer(self.layer.SerializeToString())  
+            self.singaSrclayerVector = layerVector(len(srclys)) 
+            for i in range(len(srclys)):
+                self.srclayers.append(srclys[i])
+                self.singaSrclayerVector[i] = srclys[i].get_singalayer()
+            # set up the layer
+            SingaLayer.SetupLayer(self.singalayer, self.layer.SerializeToString(), self.singaSrclayerVector)
+
+        self.singalayer.ComputeFeature(1, self.singaSrclayerVector)
+
+
+    def ComputeGradient(self, step, upd=None):
+        ''' The method creates singa::Updater
+            and calls ComputeGradient for gradient computation
+            then updates the parameters.
+
+            step = (int)    // a training step
+            upd = (object)  // Updater object
+        '''
+
+        # create singa::Updater
+        assert upd != None, 'required Updater (see model.py)' 
+        if Layer.singaupdater == None:
+            Layer.singaupdater = SingaUpdater.CreateUpdater(upd.proto.SerializeToString()) 
+
+        # call ComputeGradient of Singa
+        self.singalayer.ComputeGradient(1, self.singaSrclayerVector)
+
+        # update parameters
+        singaParams = self.singalayer.GetParams()
+        for p in singaParams:
+            Layer.singaupdater.Update(step, p, 1.0)
+
+        # recursively call ComputeGradient of srclayers
+        #(TODO) what if there are multiple source layers???
+        for sly in self.srclayers:
+            if sly.srclayers != None:
+                sly.ComputeGradient(step, upd) 
+
+    def GetParams(self):
+        ''' The method gets parameter values
+            singaParams[0] for weight
+            singaParams[1] for bias
+        '''
+        singaParams = self.singalayer.GetParams()
+        assert len(singaParams) == 2, 'weight and bias'
+        # for weight
+        weight_array = floatArray_frompointer(singaParams[0].mutable_cpu_data())
+        weight = [ weight_array[i] for i in range(singaParams[0].size()) ]
+        weight = numpy.array(weight).reshape(singaParams[0].shape())
+        # for bias
+        bias_array = floatArray_frompointer(singaParams[1].mutable_cpu_data())
+        bias = [ bias_array[i] for i in range(singaParams[1].size()) ]
+        bias = numpy.array(bias).reshape(singaParams[1].shape()[0], 1)
+
+        return weight, bias
+
+    def SetParams(self, *params):
+        ''' The method sets parameter values
+            params[0] for weight
+            params[1] for bias
+        '''
+        singaParams = self.singalayer.GetParams()
+        import pb2.common_pb2 as cm
+        for k in range(len(params)):
+            bp = cm.BlobProto()
+            bp.shape.append(int(params[k].shape[0]))
+            bp.shape.append(int(params[k].shape[1]))
+            for i in range(params[k].shape[0]):
+                for j in range(params[k].shape[1]):
+                    bp.data.append(params[k][i,j])
+            singaParams[k].FromProto(bp.SerializeToString())
+
+    def GetData(self):
+        blobptr = self.singalayer.data(self.singalayer)
+        data_array = floatArray_frompointer(blobptr.mutable_cpu_data())
+        data = [ data_array[i] for i in range(blobptr.count()) ]
+        return data
+
+    def display(self):
+        debug, flag = 0, 0
+        print self.singalayer.ToString(debug, flag)
+
+    def get_singalayer(self):
+        return self.singalayer
+
+
+class Dummy(object):
+
+    def __init__(self):
+        self.is_datalayer = True
+        self.srclayers = None 
+        self.singalayer = None
+
+        kwargs = {'name':'dummy', 'type':kDummy}
+        self.layer = Message('Layer', **kwargs).proto
+
+    def setup(self, data_shape):
+        ''' (TODO) assume to be 
+            data_shape: [64, 1, 28, 28] for mnist
+                        [100, 3, 32, 32] for cifar100
+        '''
+        # create and setup the layer
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=data_shape)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+    def Feed(self, data, nb_channel=1, is_label=0):
+        ''' Create and Setup singa::DummyLayer for input data
+            Insert data using Feed()
+        '''
+
+        batchsize, hdim = data.shape
+        datasize = batchsize * hdim
+        imgsize = int(numpy.sqrt(hdim/nb_channel)) 
+        shapeVector = [batchsize, nb_channel, imgsize, imgsize] 
+
+        # create and setup the dummy layer
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=shapeVector)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+        # feed input data
+        data = data.astype(numpy.float) 
+        dataVector = floatVector(datasize)
+        k = 0
+        for i in range(batchsize):
+            for j in range(hdim):
+                dataVector[k] = data[i,j]
+                k += 1
+        self.singalayer.Feed(shapeVector, dataVector, is_label)
+
+    def get_singalayer(self):
+        return self.singalayer.ToLayer()
+
 
 class Data(Layer):
 
@@ -155,6 +324,7 @@ class Convolution2D(Layer):
         if activation:
             self.mask = Activation(activation=activation).layer
 
+
 class MaxPooling2D(Layer):
 
     def __init__(self, pool_size=None,
@@ -177,7 +347,7 @@ class MaxPooling2D(Layer):
                'currently pool size should be square in Singa'
         super(MaxPooling2D, self).__init__(name=generate_name('pool'),
                                            type=kCPooling, **kwargs)
-        fields = {'pool' : PoolingProto().MAX,
+        fields = {'pool' : MAX,
                   'kernel' : pool_size[0],
                   'stride' : stride,
                   'pad' : 0 if ignore_border else 1}
@@ -203,8 +373,8 @@ class AvgPooling2D(Layer):
                'currently pool size should be square in Singa'
         super(AvgPooling2D, self).__init__(name=generate_name('pool'),
                                            type=kCPooling, **kwargs)
-        self.layer.pooling_conf.pool = PoolingProto().AVG
-        fields = {'pool' : PoolingProto().AVG,
+        self.layer.pooling_conf.pool = AVG
+        fields = {'pool' : AVG,
                   'kernel' : pool_size[0],
                   'stride' : stride,
                   'pad' : 0 if ignore_border else 1}
@@ -225,24 +395,47 @@ class LRN2D(Layer):
         init_values = get_init_values('lrn2d', **kwargs)
         setval(self.layer.lrn_conf, **init_values)
 
+class Loss(Layer):
+
+    def __init__(self, lossname, topk=1):
+        '''
+        required
+          lossname = (string) // softmaxloss, euclideanloss
+        '''
+        self.layer_type = enumLayerType(lossname)
+        super(Loss, self).__init__(name=generate_name(lossname),
+                                         type=self.layer_type)
+        if lossname == 'softmaxloss':
+            self.layer.softmaxloss_conf.topk = topk
 
 class Activation(Layer):
 
-    def __init__(self, activation='stanh', topk=1):
+    def __init__(self, activation='stanh'):
         '''
         required
-          activation = (string)
-        optional
-          topk       = (int)  // the number of results
+          activation = (string) // relu, sigmoid, tanh, stanh, softmax.
         '''
+        if activation == 'tanh':
+          print 'Warning: Tanh layer is not supported for CPU'
 
         self.name = activation
-        if activation == 'tanh': activation = 'stanh' # <-- better way to set?
-        self.layer_type = enumLayerType(activation)
+        self.layer_type = kActivation
+        if activation == 'stanh':
+            self.layer_type = kSTanh
+        elif activation == 'softmax':
+            self.layer_type = kSoftmax
         super(Activation, self).__init__(name=generate_name(self.name),
                                          type=self.layer_type)
-        if activation == 'softmaxloss':
-            self.layer.softmaxloss_conf.topk = topk
+        if activation == 'relu':
+            self.layer.activation_conf.type = RELU
+        elif activation == 'sigmoid':
+            self.layer.activation_conf.type = SIGMOID
+        elif activation == 'tanh':
+            self.layer.activation_conf.type = TANH # for GPU
+        #elif activation == 'stanh':
+        #    self.layer.activation_conf.type = STANH
+        
+
 
 class Dropout(Layer):
 

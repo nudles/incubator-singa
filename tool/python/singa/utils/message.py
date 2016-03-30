@@ -23,6 +23,8 @@
 
 import sys, os
 from utility import *
+from google.protobuf.internal.enum_type_wrapper import EnumTypeWrapper
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../pb2'))
 
 '''
@@ -62,10 +64,14 @@ enumDict_ = dict()
 
 #get all enum type list in the modules
 for module_obj in MODULE_LIST:
-    for enumtype in module_obj.DESCRIPTOR.enum_types_by_name:
-        tempDict = enumDict_[enumtype] = dict()
-        for name in getattr(module_obj, enumtype).DESCRIPTOR.values_by_name:
-            tempDict[name[1:].lower()] = getattr(module_obj, name)
+    #find all enumtype
+    for attrs in module_obj.__dict__.items():
+        if isinstance(attrs[1],EnumTypeWrapper):
+            enumTypeName=attrs[0]
+            enumType=attrs[1]
+            tempDict = enumDict_[enumTypeName] = dict()
+            for name in enumType.DESCRIPTOR.values_by_name:
+                tempDict[name[1:].lower()] = getattr(module_obj, name)
 
 def make_function(enumtype):
     def _function(key):
@@ -76,5 +82,7 @@ current_module = sys.modules[__name__]
 
 #def all the enumtypes
 for module_obj in MODULE_LIST:
-    for enumtype in module_obj.DESCRIPTOR.enum_types_by_name:
-        setattr(current_module, "enum"+enumtype, make_function(enumtype))
+    for attrs in module_obj.__dict__.items():
+        if isinstance(attrs[1],EnumTypeWrapper):
+            enumTypeName=attrs[0]
+            setattr(current_module, "enum"+enumTypeName, make_function(enumTypeName))

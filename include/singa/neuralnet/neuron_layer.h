@@ -122,13 +122,17 @@ class DropoutLayer : public NeuronLayer {
  */
 class DummyLayer: public NeuronLayer {
  public:
+  void Setup(const std::string str, const vector<Layer*>& srclayers);
   void Setup(const LayerProto& proto, const vector<Layer*>& srclayers) override;
   void ComputeFeature(int flag, const vector<Layer*>& srclayers) override;
   void ComputeGradient(int flag, const vector<Layer*>& srclayers) override;
+  void Feed(vector<int> shape, vector<float>* data, int op);
+  Layer* ToLayer() { return this;}
 
  private:
   bool input_ = false;  // use as input layer
   bool output_ = false;  // use as output layer
+  int batchsize_ = 1;  // use for input layer
 };
 
 /**
@@ -224,6 +228,11 @@ class InnerProductLayer : public NeuronLayer {
     return params;
   }
 
+  void SetParams(std::vector<Param*> params) {
+    weight_ = params.at(0);
+    bias_ = params.at(1);
+  }
+
  private:
   int batchsize_;
   int vdim_, hdim_;
@@ -269,7 +278,7 @@ class PoolingLayer : public NeuronLayer {
   int kernel_x_, pad_x_, stride_x_;
   int kernel_y_, pad_y_, stride_y_;
   int batchsize_, channels_, height_, width_, pooled_height_, pooled_width_;
-  PoolingProto_PoolMethod pool_;
+  PoolMethod pool_;
 };
 /**
  * Use book-keeping for BP following Caffe's pooling implementation

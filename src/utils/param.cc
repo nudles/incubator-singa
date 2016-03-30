@@ -154,6 +154,7 @@ void Param::Setup(const vector<int>& shape) {
   data_.Reshape(shape);
   grad_.Reshape(shape);
   history_.Reshape(shape);
+  update_.Reshape(shape);
 }
 
 void Param::InitValues() {
@@ -196,6 +197,12 @@ void Param::ShareFrom(Param* other) {
 
   ShareDataFrom(other, false);
   grad_.ShareData(&(other->grad_), false);
+}
+
+void Param::FromProto(const string str) {
+  BlobProto blob;
+  blob.ParseFromString(str);
+  data_.FromProto(blob);
 }
 
 void Param::FromProto(const BlobProto& blob) {

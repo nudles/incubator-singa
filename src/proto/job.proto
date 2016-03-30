@@ -138,6 +138,12 @@ message UpdaterProto {
 
   // configuration for RMSProp algorithm
   optional RMSPropProto rmsprop_conf = 3;
+  // congiguration for AdaDelta algorithm
+  optional AdaDeltaProto adadelta_conf = 4;
+  // congiguration for Adam algorithm
+  optional AdamProto adam_conf = 5;
+  // congiguration for AdamMax algorithm
+  optional AdamMaxProto adammax_conf = 6;
 
   // learning rate generator
   optional LRGenProto learning_rate = 11;
@@ -518,10 +524,6 @@ message LRNProto {
 message PoolingProto {
   // The kernel size (square)
   optional int32 kernel= 1 [default = 3];
-  enum PoolMethod {
-    MAX = 0;
-    AVG = 1;
-  }
   // The pooling method
   optional PoolMethod pool = 30 [default = MAX];
   // The padding size
@@ -560,6 +562,17 @@ message SoftmaxProto {
 message RMSPropProto {
  // history=history*rho_+(1-rho_)*(grad*grad_scale);
   required float rho = 1;
+}
+message AdaDeltaProto {
+  required float rho = 1 [default = 0.9];
+}
+message AdamProto {
+  required float beta1 = 1 [default = 0.9];
+  required float beta2 = 2 [default = 0.999];
+}
+message AdamMaxProto {
+  required float beta1 = 1 [default = 0.9];
+  required float beta2 = 2 [default = 0.999];
 }
 
 message FixedStepProto {
@@ -630,6 +643,7 @@ enum LayerType {
   kImagePreprocess = 101;
   kPrefetch = 102;
   kRecordInput = 103;
+  kDummyInput = 104;
   kLMDBData = 190;  // deprecated
   kLabel = 191;  // deprecated
   kMnist = 192;  // deprecated
@@ -659,6 +673,7 @@ enum LayerType {
   kSoftmax = 214;
   kGRU = 215;
   kEmbedding = 216;
+  kActivation = 217;
 
   // cudnn v3
   kCudnnConv = 250;
@@ -713,6 +728,12 @@ enum UpdaterType {
   kRMSProp = 3;
   // Nesterov first optimal gradient method
   kNesterov = 4;
+  // AdaDelta
+  kAdaDelta = 5;
+  // Adam
+  kAdam = 6;
+  // AdamMax
+  kAdamMax = 7;
   // For user defined updater
   kUserUpdater = 105;
 }
@@ -788,3 +809,9 @@ enum UnrollConnType {
   // customized connection type defined by src_conn
   kUnrollCustomized = 4;
 }
+
+enum PoolMethod {
+  MAX = 0;
+  AVG = 1;
+}
+
