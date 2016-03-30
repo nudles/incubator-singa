@@ -21,18 +21,18 @@
 #*
 #*************************************************************/
 
-import os, sys, string
+import os, sys
 import numpy as np
 
 current_path_ = os.path.dirname(__file__)
-singa_root_=os.path.abspath(os.path.join(current_path_,'../../..'))
+singa_root_=os.path.abspath(os.path.join(current_path_,'../../../..'))
 sys.path.append(os.path.join(singa_root_,'tool','python'))
 
+from model import neuralnet, loss, updater
 from singa.driver import Driver
 from singa.layer import *
-from singa.model import *
+from singa.model import save_model_parameter, load_model_parameter 
 from singa.utils.utility import swap32
-from google.protobuf.text_format import Merge
 
 '''
 Example of CNN with cifar10 dataset
@@ -74,25 +74,6 @@ print '[Layer registration/declaration]'
 d = Driver()
 d.Init(sys.argv)
 
-input = Dummy()
-label = Dummy()
-
-nn = [] # neural net (hidden layers)
-nn.append(Convolution2D(32, 5, 1, 2, w_std=0.0001, b_lr=2))
-nn.append(MaxPooling2D(pool_size=(3,3), stride=2))
-nn.append(Activation('relu'))
-nn.append(LRN2D(3, alpha=0.00005, beta=0.75))
-nn.append(Convolution2D(32, 5, 1, 2, b_lr=2))
-nn.append(Activation('relu'))
-nn.append(AvgPooling2D(pool_size=(3,3), stride=2))
-nn.append(LRN2D(3, alpha=0.00005, beta=0.75))
-nn.append(Convolution2D(64, 5, 1, 2))
-nn.append(Activation('relu'))
-nn.append(AvgPooling2D(pool_size=(3,3), stride=2))
-nn.append(Dense(10, w_wd=250, b_lr=2, b_wd=0))
-
-loss = Loss('softmaxloss')
-sgd = SGD(decay=0.004, momentum=0.9, lr_type='manual', step=(0,60000,65000), step_lr=(0.001,0.0001,0.00001))
 
 #-------------------------------------------------------------------
 print '[Start training]'
@@ -100,24 +81,53 @@ batchsize = 100
 disp_freq = 50
 train_step = 1000
 
-for dataset_id in range(train_step / batchsize):
+workspace = 'tool/python/examples/user1-cifar10/'
+checkpoint = 'step100-worker0'
+
+label = Dummy()
+
+imgsize = 32 
+nb_channel = 3
+data_shape = [batchsize, nb_channel, imgsize, imgsize]
+load_model_parameter(workspace+checkpoint, neuralnet, data_shape)
+
+#for dataset_id in range(train_step / batchsize):
+for dataset_id in range(1):
 
     x, y = load_dataset(dataset_id%5+1)
 
-    for i in range(x.shape[0] / batchsize):
+    #for i in range(x.shape[0] / batchsize):
+    for i in range(100):
 
         xb, yb = x[i*batchsize:(i+1)*batchsize,:], y[i*batchsize:(i+1)*batchsize,:]
-        input.SetData(xb, 3, 0)
-        label.SetData(yb, 1, 1)
+        neuralnet[0].Feed(xb, 3, 0)
+        label.Feed(yb, 1, 1)
         
-        for h in range(len(nn)):
-            if h == 0:
-                nn[h].ComputeFeature(input)
-            else:
-                nn[h].ComputeFeature(nn[h-1])
-        loss.ComputeFeature(nn[-1], label)
+        for h in range(1, len(neuralnet)):
+            neuralnet[h].ComputeFeature(neuralnet[h-1])
+        loss.ComputeFeature(neuralnet[-1], label)
         if (i+1)%disp_freq == 0:
             print '  Step {:>3}: '.format(i+1 + dataset_id*(x.shape[0]/batchsize)),
             loss.display()
 
-        loss.ComputeGradient(i+1, sgd)
+        loss.ComputeGradient(i+1, updater)
+
+    step_trained = 100 
+    save_model_parameter(step_trained, workspace, neuralnet)
+
+    #---- test of loading    
+    load_model_parameter(workspace+checkpoint, neuralnet)
+    
+    for i in range(100, 200):
+        xb, yb = x[i*batchsize:(i+1)*batchsize,:], y[i*batchsize:(i+1)*batchsize,:]
+    
+        neuralnet[0].Feed(xb)
+        label.Feed(yb, 1, 1)
+            
+        for h in range(1, len(neuralnet)):
+            neuralnet[h].ComputeFeature(neuralnet[h-1])
+        loss.ComputeFeature(neuralnet[-1], label)
+        if (i+1)%disp_freq == 0:
+            print '  Step {:>3}: '.format(i+1),
+            loss.display()
+        loss.ComputeGradient(i+1, updater)

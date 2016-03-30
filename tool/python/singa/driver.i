@@ -31,6 +31,7 @@
 %apply (int ARGC, char **ARGV) { (int argc, char **argv)  }
 %{
 #include "singa/driver.h"
+#include "singa/worker.h"
 #include "singa/neuralnet/neuralnet.h"
 #include "singa/neuralnet/layer.h"
 #include "singa/neuralnet/input_layer.h"
@@ -62,10 +63,18 @@ namespace singa{
 
   class NeuralNet{
     public:
-     static NeuralNet* CreateFromStr(const std::string str);
+     static NeuralNet* CreateNeuralNet(const std::string str);
      void Load(const std::vector<std::string>& paths);
      inline const std::vector<singa::Layer*>& layers();
      inline const std::vector<singa::Layer*>& srclayers(const singa::Layer* layer);
+  };
+
+  %nodefault Worker;
+  class Worker{
+    public:
+      static singa::Worker* CreateWorker(const std::string str);
+      void InitNetParams(const std::string& folder, std::vector<singa::Layer*> net);
+      void Checkpoint(int step, const std::string& folder, std::vector<singa::Layer*> net);
   };
     
   class DummyLayer{
@@ -112,6 +121,8 @@ namespace singa{
       inline const std::vector<int>& shape();
       inline float* mutable_cpu_data();
       void FromProto(const std::string str);
+      /*void ToProto(singa::BlobProto* blob); 
+      */
   };
 
   %template(floatBlob) Blob<float>;

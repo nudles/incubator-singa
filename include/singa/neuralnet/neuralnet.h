@@ -62,7 +62,7 @@ class NeuralNet {
    * Create for python binding, production test mode
    *
    */
-  static NeuralNet* CreateFromStr(const string str);
+  static NeuralNet* CreateNeuralNet(const string str);
   NeuralNet() {};
   
   static const NetProto Unrolling(const NetProto& net_conf);
