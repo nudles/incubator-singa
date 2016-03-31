@@ -205,7 +205,7 @@ class Dummy(object):
             nb_pixels *= shape[i+2]  
         if dtype=='byte': 
             self.is_label = 0
-            d = np.fromfile(path, dtype=np.int8)
+            d = np.fromfile(path, dtype=np.uint8)
         elif dtype=='int': 
             self.is_label = 1
             d = np.fromfile(path, dtype=np.int)
@@ -260,6 +260,176 @@ class Dummy(object):
     def get_singalayer(self):
         return self.singalayer.ToLayer()
 
+class ImageData(object):
+
+    def __init__(self, shape=[], data_path='', data_type='byte',mean_path='',mean_type='float'):
+        ''' Dummy layer is used for data layer
+            shape = (list)   // [# of samples, # of channels, img h, img w]
+            data_path  = (string) // path to dataset
+            mean_path
+        '''
+        self.is_datalayer = True
+        self.srclayers = None 
+        self.singalayer = None
+        self.is_label = False 
+        # create layer proto for Dummy layer
+        kwargs = {'name':'dummy', 'type':kDummy}
+        self.layer = Message('Layer', **kwargs).proto
+
+        # if dataset path is not specified, skip
+        # otherwise, load dataset
+        if data_path == '' or mean_path=='':
+            return
+
+        self.shape = shape
+        self.data_path = data_path
+        self.mean_path = mean_path
+        self.src = None
+        self.batch_index = 0
+
+        import numpy as np
+        nb_samples = shape[0]
+        nb_pixels = shape[1]
+        for i in range(len(shape)-2):
+            nb_pixels *= shape[i+2]  
+
+        if data_type=='byte': 
+            d = np.fromfile(data_path, dtype=np.uint8)
+        elif data_type=='int': 
+            d = np.fromfile(data_path, dtype=np.int)
+        self.data = d.reshape(nb_samples, nb_pixels)
+
+        if mean_type=='float': 
+            d = np.fromfile(mean_path, dtype=np.float32)
+        self.mean = d.reshape(1, nb_pixels)
+
+    def setup(self, data_shape):
+        ''' Create and Setup singa Dummy layer
+            called by load_model_parameter
+        '''
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=data_shape)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+
+    def FetchData(self, batchsize):
+
+        d = self.data[self.batch_index*batchsize:(self.batch_index+1)*batchsize, :]
+        self.Feed(d, self.shape[1])
+        self.batch_index += 1
+        if (self.batch_index+1)*batchsize>self.data.shape[0]:
+            self.batch_index=0
+
+
+
+    def Feed(self, data, nb_channel=1):
+        ''' Create and Setup singa::DummyLayer for input data
+            Insert data using Feed()
+            Need to minus the mean file
+        '''
+        batchsize, hdim = data.shape
+        datasize = batchsize * hdim
+        imgsize = int(numpy.sqrt(hdim/nb_channel)) 
+        shapeVector = [batchsize, nb_channel, imgsize, imgsize] 
+        #print shapeVector
+        # create and setup the dummy layer
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=shapeVector)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+        # feed input data and minus mean 
+        data = data.astype(numpy.float) 
+        dataVector = floatVector(datasize)
+        k = 0
+        for i in range(batchsize):
+            for j in range(hdim):
+                dataVector[k] = data[i,j]-self.mean[0,j]
+                k += 1
+        self.singalayer.Feed(shapeVector, dataVector, 0)
+
+    def get_singalayer(self):
+        return self.singalayer.ToLayer()
+
+
+class LabelData(object):
+
+    def __init__(self, shape=[], label_path='', label_type='int'):
+        ''' Dummy layer is used for label data layer
+            shape = (list)   // [# of samples, # of channels, img h, img w]
+            data_path  = (string) // path to dataset
+            mean_path
+        '''
+        self.is_datalayer = True
+        self.srclayers = None 
+        self.singalayer = None
+        self.is_label = True
+        # create layer proto for Dummy layer
+        kwargs = {'name':'dummy', 'type':kDummy}
+        self.layer = Message('Layer', **kwargs).proto
+
+        # if dataset path is not specified, skip
+        # otherwise, load dataset
+        if label_path == '':
+            return
+
+        self.shape = shape
+        self.label_path = label_path
+        self.src = None
+        self.batch_index = 0
+
+        import numpy as np
+        nb_samples = shape[0]
+
+        if label_type=='int': 
+            d = np.fromfile(label_path, dtype=np.int)
+        self.data = d.reshape(nb_samples, 1)
+
+    def setup(self, data_shape):
+        ''' Create and Setup singa Dummy layer
+            called by load_model_parameter
+        '''
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=data_shape)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+
+    def FetchData(self, batchsize):
+
+        d = self.data[self.batch_index*batchsize:(self.batch_index+1)*batchsize, :]
+        self.Feed(d, self.shape[1])
+        self.batch_index += 1
+        if (self.batch_index+1)*batchsize>self.data.shape[0]:
+            self.batch_index=0
+
+    def Feed(self, data,nb_chanel=1):
+        ''' Create and Setup singa::DummyLayer for input data
+            Insert data using Feed()
+            Need to minus the mean file
+        '''
+        batchsize = data.shape[0]
+        shapeVector = [batchsize, 1] 
+
+        # create and setup the dummy layer
+        if self.singalayer == None:
+            setval(self.layer.dummy_conf, input=True)
+            setval(self.layer.dummy_conf, shape=shapeVector)
+            self.singalayer = DummyLayer()
+            self.singalayer.Setup(self.layer.SerializeToString(), layerVector(0))
+
+        data = data.astype(numpy.float) 
+        dataVector = floatVector(batchsize)
+        for i in range(batchsize):
+            dataVector[i] = data[i,0]
+        self.singalayer.Feed(shapeVector, dataVector, 1)
+
+    def get_singalayer(self):
+        return self.singalayer.ToLayer()
 
 class Data(Layer):
 
