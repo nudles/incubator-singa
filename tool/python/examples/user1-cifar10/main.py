@@ -77,7 +77,7 @@ def train(batchsize,disp_freq,check_freq,train_step,workspace,checkpoint=None):
     print '[Finish training]'
     
 
-def product(workspace,checkpoint,port):
+def product(workspace,checkpoint):
     
     print '[Layer registration/declaration]'
     # TODO change layer registration methods
@@ -87,7 +87,7 @@ def product(workspace,checkpoint,port):
     load_model_parameter(workspace+checkpoint, neuralnet,1) 
    
     app.debug = True
-    app.run(host='0.0.0.0', port=int(port))
+    app.run(host='0.0.0.0', port=80)
 
 
 @app.route("/")
@@ -176,7 +176,6 @@ if __name__=='__main__':
         port = sys.argv[3]
         product(
           workspace = '/workspace',
-          checkpoint = checkpoint, 
-          port = port
+          checkpoint = checkpoint 
         )
 
