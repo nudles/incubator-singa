@@ -69,16 +69,22 @@ def train(batchsize,disp_freq,check_freq,train_step,workspace,checkpoint=None):
 
 
     print '[Finish training]'
-        
-def main():
-    train(
-          batchsize = 100, 
-          disp_freq = 10,
-          check_freq = 100, 
-          train_step = 1000,
-          workspace = 'tool/python/examples/user1-cifar10/',
-          checkpoint = 'step100-worker0'
-          )
 
 if __name__=='__main__':
-    main()
+    if len(sys.argv) < 5:
+        print "argv should be more than 5"
+    if len(sys.argv) > 5:
+        checkpoint = sys.argv[5]
+    else:
+        checkpoint = None
+    print checkpoint
+    train(
+          batchsize = int(sys.argv[1]), 
+          disp_freq = int(sys.argv[2]),
+          check_freq = int(sys.argv[3]), 
+          train_step = int(sys.argv[4]),
+          workspace = '/workspace',
+          checkpoint = checkpoint,
+          )
+
+
