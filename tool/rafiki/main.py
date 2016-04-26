@@ -169,11 +169,10 @@ if __name__=='__main__':
           checkpoint = checkpoint,
           )
     else:
-        if len(sys.argv) < 4:
-            print "argv should be more than 3"
+        if len(sys.argv) < 3:
+            print "argv should be more than 2"
             exit()
         checkpoint = sys.argv[2]
-        port = sys.argv[3]
         product(
           workspace = '/workspace',
           checkpoint = checkpoint 
