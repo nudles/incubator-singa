@@ -88,7 +88,7 @@ IF(USE_PYTHON)
     TARGET_LINK_LIBRARIES(_singa_wrap ${WRAPPER_LINKER_LIBS})
     TARGET_INCLUDE_DIRECTORIES(_singa_wrap PRIVATE ${PYTHON_INCLUDE_DIRS})
     #message(STATUS "PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS}")
-    
+
     SET_TARGET_PROPERTIES(_singa_wrap
         PROPERTIES PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python/singa
@@ -98,7 +98,7 @@ IF(USE_PYTHON)
     SET(SETUP_PY_IN "python/setup.py.in")
     set(SETUP_PY    "${CMAKE_BINARY_DIR}/python/setup.py")
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
-    
+
     #COPY protobuf files to python/singa/proto
     FILE(COPY ${CMAKE_BINARY_DIR}/python/singa/__init__.py DESTINATION ${CMAKE_BINARY_DIR}/python/singa/proto )
 

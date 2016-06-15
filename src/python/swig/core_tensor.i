@@ -24,6 +24,7 @@
 %module core_tensor
 %include "std_vector.i"
 %include "std_string.i"
+%include "std_shared_ptr.i"
 
 %include "carrays.i"
 %array_class(float, floatArray);
@@ -39,6 +40,7 @@
 #include "singa/proto/model.pb.h"
 using singa::DataType;
 %}
+%shared_ptr(singa::Device)
 
 %include "numpy.i"
 %init %{
@@ -173,6 +175,7 @@ namespace singa{
   /* TODO(chonho-02)
      need to implement the average of all elements ??? */
   Tensor Average(const Tensor &t, int axis);
+  Tensor SoftMax(const Tensor &t);
 
 
   Tensor Pow(const Tensor &base, const Tensor &exp);

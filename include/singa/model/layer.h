@@ -23,8 +23,10 @@
 #include <string>
 #include <stack>
 #include <utility>
+#include <memory>
 #include "singa/core/tensor.h"
 #include "singa/proto/model.pb.h"
+#include "singa/utils/factory.h"
 
 namespace singa {
 
@@ -227,5 +229,21 @@ class Layer {
   vector<ParamSpec> param_specs_;
 };
 
+#define RegisterLayerClass(SubLayer) \
+  static Registra<Layer, SubLayer> _##SubLayer##Layer(#SubLayer);
+
+inline std::shared_ptr<Layer> CreateLayer(const std::string type) {
+  std::shared_ptr<Layer> layer(Factory<Layer>::Create(type));
+  return layer;
+}
+
+inline const std::vector<std::string> GetRegisteredLayers() {
+  vector<std::string> ret;
+  for (const string type : Factory<Layer>::GetIDs()) {
+    auto layer = CreateLayer(type);
+    ret.push_back("Register type: " + type + " --> " + layer->layer_type());
+  }
+  return ret;
+}
 }  // namespace singa
 #endif  // SINGA_MODEL_LAYER_H_
