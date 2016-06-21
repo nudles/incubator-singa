@@ -24,6 +24,7 @@
 %module core_device
 %include "std_vector.i"
 %include "std_string.i"
+%include "std_pair.i"
 %include "std_shared_ptr.i"
 
 %{
@@ -32,32 +33,32 @@
 
 /* smart pointer to avoid memory leak */
 %shared_ptr(singa::Device);
-%shared_ptr(singa::CppCPU);
-%shared_ptr(singa::CudaGPU);
+
+namespace std{
+%template(Shape) std::vector<size_t>;
+%template(SizePair) std::pair<size_t, size_t>;
+%template(vectorPair) std::vector<std::pair<size_t, size_t>>;
+%template(vectorSharedPtr) std::vector<std::shared_ptr<singa::Device>>;
+}
 
 namespace singa{
 
-  class Device {
-   public:
-    virtual void SetRandSeed(unsigned seed) = 0;
-    std::shared_ptr<Device> host();
-    int id() const;
-  };
+class Device {
+  public:
+  virtual void SetRandSeed(unsigned seed) = 0;
+  std::shared_ptr<Device> host();
+  int id() const;
+};
 
-  class CppCPU : public Device {
-   public:
-    CppCPU();
-    void SetRandSeed(unsigned seed) override;
-    /* (TODO) add necessary functions of CppCPU class
-    */
-  };
-
-  class CudaGPU : public Device {
-   public:
-    CudaGPU();
-    void SetRandSeed(unsigned seed) override;
-    /* (TODO) add necessary functions of CudaGPU class
-    */
-  };
+class Platform {
+ public:
+  static int GetNumGPUs();
+  static const vector<int> GetGPUIDs();
+  static const std::pair<size_t, size_t> GetGPUMemSize(const int device);
+  static const vector<std::pair<size_t, size_t>> GetGPUMemSize();
+  static const string DeviceQuery(int id, bool verbose = false);
+  static const vector<shared_ptr<Device> >
+  CreateCudaGPUs(const size_t num_devices, size_t init_size = 0);
+};
 }
 
