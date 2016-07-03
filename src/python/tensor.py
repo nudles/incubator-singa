@@ -21,9 +21,8 @@ to call singa::Tensor and its methods
 """
 
 import numpy as np
-import singa
 from proto.core_pb2 import *
-
+from . import singa_wrap as singa
 
 class Tensor(object):
     ''' Class and member functions for singa::Tensor

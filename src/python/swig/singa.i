@@ -21,7 +21,7 @@
 
 /*interface file for swig */
 
-%module singa
+%module singa_wrap
 %include "core_tensor.i"
 %include "core_device.i"
 %include "model_layer.i"

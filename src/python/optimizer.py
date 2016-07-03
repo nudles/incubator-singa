@@ -17,7 +17,7 @@
 # =============================================================================
 """ Python wrappers for optimizers implemented by C++."""
 
-from . import singa
+from . import singa_wrap as singa
 import tensor
 from proto import model_pb2
 

@@ -20,7 +20,7 @@ This script includes Device class and its subclasses for python users
 to call singa::Device and its methods
 '''
 
-import singa
+from . import singa_wrap as singa
 
 
 class Device(object):

@@ -73,3 +73,5 @@ class Regularizer {
   void Apply(int step, Tensor* grad, Tensor* value);
 };
 std::shared_ptr<Regularizer> CreateRegularizer(const std::string& type);
+
+}
