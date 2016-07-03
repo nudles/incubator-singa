@@ -35,12 +35,6 @@ using singa::ParamSpec;
 using singa::OptimizerConf;
 %}
 
-namespace std {
-  %template(strVector) vector<string>;
-  %template(paramVector) vector<ParamSpec>;
-  %template(tensorVector) vector<Tensor>;
-  %template(tensorPtrVector) vector<Tensor*>;
-}
 
 %shared_ptr(singa::Optimizer)
 %shared_ptr(singa::Regularizer)
@@ -49,13 +43,13 @@ namespace std {
 namespace singa {
 class Optimizer {
  public:
-  Optimizer() = default;
+  // Optimizer() = default;
   virtual ~Optimizer() = default;
   void Setup(const string& str);
   virtual void Apply(int step, float lr, const string& name, const Tensor& grad,
-    Tensor* value);
+    Tensor* value) = 0;
 };
-std::shared_ptr<Optimizer> CreateOptimizer(std::string& type);
+inline std::shared_ptr<Optimizer> CreateOptimizer(std::string& type);
 
 class Constraint {
  public:
@@ -73,5 +67,4 @@ class Regularizer {
   void Apply(int step, Tensor* grad, Tensor* value);
 };
 std::shared_ptr<Regularizer> CreateRegularizer(const std::string& type);
-
 }

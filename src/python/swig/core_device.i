@@ -35,8 +35,7 @@
 %shared_ptr(singa::Device);
 
 namespace std{
-%template(Shape) std::vector<size_t>;
-%template(SizePair) std::pair<size_t, size_t>;
+%template(sizePair) std::pair<size_t, size_t>;
 %template(vectorPair) std::vector<std::pair<size_t, size_t>>;
 %template(vectorSharedPtr) std::vector<std::shared_ptr<singa::Device>>;
 }

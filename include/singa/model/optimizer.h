@@ -162,8 +162,8 @@ class Regularizer {
   string type_ = "NotSet";
   float coefficient_;
 };
-inline Regularizer* CreateRegularizer(std::string type) {
-  return new Regularizer();
+inline std::shared_ptr<Regularizer> CreateRegularizer(std::string type) {
+  return std::make_shared<Regularizer>();
 }
 
 
@@ -233,7 +233,7 @@ class RMSProp : public Optimizer {
 };
 
 
-inline std::shared_ptr<Optimizer> CreateOptimzier(const string& type) {
+inline std::shared_ptr<Optimizer> CreateOptimizer(const string& type) {
   std::shared_ptr<Optimizer>  opt;
   if (type == "SGD")
     opt = std::shared_ptr<Optimizer>(new SGD());
