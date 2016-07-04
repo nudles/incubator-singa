@@ -40,7 +40,7 @@ namespace singa {
 /// languages, namely cpp, cuda and opencl.
 class Device {
   public:
-  Device() = default;
+  // Device() = default;
   virtual ~Device() {}
   /// Constructor with device ID, num of executors (e.g., cuda streams),
   /// max mem size to use (in MB)
@@ -90,8 +90,6 @@ class Device {
   }
 
   int id() const { return id_; }
-
-  virtual ~Device();
 
  private:
   Device() {};

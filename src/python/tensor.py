@@ -21,7 +21,7 @@ to call singa::Tensor and its methods
 """
 
 import numpy as np
-from proto.core_pb2 import *
+from .proto.core_pb2 import *
 from . import singa_wrap as singa
 
 
