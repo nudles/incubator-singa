@@ -24,7 +24,7 @@ import numpy as np
 
 from . import singa_wrap as singa
 
-from .proto import *
+from .proto import model_pb2 
 
 class Layer(object):
     """Base Python layer class.
