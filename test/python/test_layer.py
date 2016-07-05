@@ -1,9 +1,9 @@
 import sys
 import os
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), '../../src/python'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../build/python'))
 
-import layer
+from singa import layer
 
 
 def _tuple_to_string(t):

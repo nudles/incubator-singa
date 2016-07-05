@@ -31,7 +31,6 @@
 #include "singa/core/device.h"
 %}
 
-<<<<<<< HEAD
 /* smart pointer to avoid memory leak */
 %shared_ptr(singa::Device);
 
