@@ -32,8 +32,10 @@ using std::vector;
 using std::tuple;
 namespace singa {
 
+/// TODO(wangwei) replace size_t to int
 typedef vector<size_t> Shape;
 /// hardcode the width of types defined in DataType
+/// TODO(wangwei) include kFloat8
 const size_t kDataWidth[] = {sizeof(float),  sizeof(float) / 2,
                              sizeof(int),    sizeof(char),
                              sizeof(double), sizeof(unsigned char)
@@ -45,25 +47,33 @@ inline size_t SizeOf(DataType t) {
   return kDataWidth[t];
 }
 
-/// A Tensor instance is a multi-dimensional array resident on a Device
-/// (default device is the host CPU). The internal data is allocated in lazy
-/// manner.
-/// Linear algebra, neural net and random operations are provided against
-/// Tensor.
+/// A Tensor instance is a multi-dimensional array allocated on a Device
+/// instance (default device is the host CPU), which provides a subset of
+/// operations of numpy and some operations specific for neural nets.
+///
+/// The internal data is allocated when it is accessed.
 /// For all operations, if the result tensor is passed as an argument,
-/// then it must be set up correctly (shape, device). Otherwise, runtime error
-/// like SegmentFault would happen. Simple type/device check would be conducted.
+/// then it must be set up and allocated correctly (shape, device).
+/// Otherwise, runtime error like SegmentFault would happen.
+/// Simple type/device check would be conducted.
+/// TODO(wangwei) make the nameing of methods consistent:
+///     1. methods for accessing fields or data without changes;
+///     2. methods that changes the meta data; returns a new 
+///        Tensor instance shaing the same memory or change internal data; 
+///     3. methods that return a new Tensor instance with a new memory block
+/// Keep the deprecated APIs for compatibility.
 class Tensor {
  public:
   ~Tensor();
   Tensor();
 
   /// Constructor using default device.
+  /// Shape is a vector; DataType could be kInt or kFloat32;
+  /// TODO(wangwei), extend it to support other bitwidth
   explicit Tensor(const Shape &shape, DataType dtype = kFloat32);
 
   /// Constructor with shape, device and data type
-  Tensor(const Shape &shape,
-         std::shared_ptr<Device> dev,
+  Tensor(const Shape &shape, std::shared_ptr<Device> dev,
          DataType dtype = kFloat32);
 
   /// Copy constructor.  No deep copy.
@@ -103,8 +113,9 @@ class Tensor {
 
   bool empty() const { return nDim() == 0; }
 
-  /// The stride should decrease except dim with stride=0 due to broadcasting
+  /// Deprecated! use is_transposed().
   bool transpose() const {
+    // The stride should decrease except dim with stride=0 if not transposed
     if (!stride_.empty()) {
       auto last = stride_.front();
       for (auto s : stride_) {
@@ -117,11 +128,20 @@ class Tensor {
     return false;
   }
 
+  bool is_transposed() const {
+    return transpose();
+  }
+
   const vector<int>& stride() const { return stride_; }
 
   /// Return true if the content of the tensor is initialized
+  /// Deprecated! Use is_initialized().
   bool initailized() const {
     return block_ != nullptr && block_->initialized();
+  }
+
+  bool is_initialized() const {
+    return initialzied();
   }
 
   /// Return number of total elements
@@ -169,7 +189,7 @@ class Tensor {
   void FromProto(const singa::TensorProto &proto);
 
 
-  /// TODO(wangwei) merge RepeatData into  Repeat?
+  /// TODO(wangwei) merge RepeatData into Repeat()?
   void RepeatData(const vector<size_t>& repeats, int axis, int total_repeats,
                   const Tensor &other);
 
