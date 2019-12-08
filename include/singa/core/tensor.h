@@ -58,9 +58,8 @@ inline size_t SizeOf(DataType t) {
 /// Simple type/device check would be conducted.
 /// TODO(wangwei) make the nameing of methods consistent:
 ///     1. methods for accessing fields or data without changes;
-///     2. methods that changes the meta data; returns a new 
-///        Tensor instance shaing the same memory or change internal data; 
-///     3. methods that return a new Tensor instance with a new memory block
+///     2. methods that return a new Tensor instance without changing anything 
+///         or does in-place changes. The memory block is shared in the best effort.
 /// Keep the deprecated APIs for compatibility.
 class Tensor {
  public:
@@ -134,12 +133,12 @@ class Tensor {
 
   const vector<int>& stride() const { return stride_; }
 
-  /// Return true if the content of the tensor is initialized
   /// Deprecated! Use is_initialized().
   bool initailized() const {
     return block_ != nullptr && block_->initialized();
   }
 
+  /// Return true if the data of the tensor is initialized
   bool is_initialized() const {
     return initialzied();
   }
@@ -151,7 +150,7 @@ class Tensor {
     return block_->size() / SizeOf(data_type_);
   }
 
-  /// Return memory size (i.e., Bytes)
+  /// Return memory size in bytes
   size_t MemSize() const { return block_->size(); }
 
   /// used for swig code to convert Tensor into numpy array.
@@ -329,7 +328,8 @@ ToType TypeCast(const FromType &x) {
   return static_cast<ToType>(x);
 }
 
-Tensor Boradcast(const Shape& shape);
+/// TODO(wangwei) the following methods can be removed. equivalent to inplace=False
+Tensor Broadcast(const Shape& shape);
 
 /// Reshape the given tensor and generate a new tensor; the total vol should match
 /// which shares the memory with in if possible
@@ -356,6 +356,10 @@ void CopyDataToFrom(Tensor *dst, const Tensor &src, const size_t num,
 void RepeatDataToFrom(bool broadcast_flag, const vector<size_t>& repeats, int axis,
                       Tensor *dst, const Tensor &in, const size_t num);
 
+/// TODO(wangwei) for all ops to be implemented directly on the device using
+/// cuda, the ops should be defined here. otherwise (e.g., batchnorm, conv,
+/// pool), they should be implemented in model/operation/
+
 // =============Element-wise operations====================================
 Tensor Abs(const Tensor &in);
 Tensor Exp(const Tensor &in);
@@ -381,6 +385,7 @@ Tensor Atan(const Tensor &in);
 Tensor Atanh(const Tensor &in);
 Tensor Transform(const Tensor &in);
 
+/// TODO(wangwei) do we need these functions if they are implemented by class methods
 void Abs(const Tensor &in, Tensor *out);
 void Exp(const Tensor &in, Tensor *out);
 void Log(const Tensor &in, Tensor *out);
@@ -404,6 +409,8 @@ void Tanh(const Tensor &in, Tensor *out);
 void Atan(const Tensor &in, Tensor *out);
 void Atanh(const Tensor &in, Tensor *out);
 void Transform(const Tensor &in, Tensor *out);
+
+/// TODO(wangwei) for every binary op, we need two versions: return a tensor or void.
 
 /// Element-wise operation, out[i]= (in2[i] > 0) ? in1[i] : 0.f
 Tensor ReLUBackward(const Tensor &in1, const Tensor& in2);
@@ -508,7 +515,7 @@ SType Sum(const Tensor &in);
 /// Average elements in the Tensor, currently only support vector and matrix.
 /// if 'axis' is 0, average all rows into a single row
 /// if 'axis' is 1, average all columns into a single column
-/// TODO(wangwei) support arbitrary Tensor like numpy.average
+/// TODO(wangwei) support arbitrary Tensor like numpy.average with arg axis 
 Tensor Average(const Tensor &in, const int axis);
 
 /// Add column 'v' with each column of matrix M
@@ -554,6 +561,7 @@ void SumRows(const Tensor &M, Tensor *out);
 Tensor Sum(const Tensor &in, const int axis);
 
 // ================Random operations==========================================
+/// TODO(wangwei) manage random seed
 /// For each element x set x = 1 if random() < p; otherwise x = 1.
 template <typename SType>
 void Bernoulli(const SType p, Tensor *out);
