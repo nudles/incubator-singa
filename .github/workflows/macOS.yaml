@@ -43,4 +43,6 @@ jobs:
         env:
           CXXFLAGS: -I  /Users/runner/hostedtoolcache/Python/3.7.8/x64/lib/python3.7/site-packages/numpy/core/include $CXXFLAGS
       - name: C++ test
+        env:
+          LD_LIBRARY_PATH: /usr/local/opt/openblas/lib:/tmp/dnnl_mac_1.1.3_cpu_iomp/lib:$LD_LIBRARY_PATH
         run: build/bin/test_singa
