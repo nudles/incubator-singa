@@ -42,7 +42,8 @@ jobs:
         run: cd build && make
         env:
           CXXFLAGS: -I  /Users/runner/hostedtoolcache/Python/3.7.8/x64/lib/python3.7/site-packages/numpy/core/include $CXXFLAGS
+          LD_LIBRARY_PATH: /usr/local/opt/openblas/lib:/tmp/dnnl_mac_1.1.3_cpu_iomp/lib:$LD_LIBRARY_PATH
       - name: C++ test
+        run: ls /tmp/dnnl_mac_1.1.3_cpu_iomp/lib && otool -L build/bin/test_singa && build/bin/test_singa
         env:
           LD_LIBRARY_PATH: /usr/local/opt/openblas/lib:/tmp/dnnl_mac_1.1.3_cpu_iomp/lib:$LD_LIBRARY_PATH
-        run: ls /tmp/dnnl_mac_1.1.3_cpu_iomp/lib && build/bin/test_singa
