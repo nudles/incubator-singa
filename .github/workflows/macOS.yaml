@@ -45,4 +45,4 @@ jobs:
       - name: C++ test
         env:
           LD_LIBRARY_PATH: /usr/local/opt/openblas/lib:/tmp/dnnl_mac_1.1.3_cpu_iomp/lib:$LD_LIBRARY_PATH
-        run: build/bin/test_singa
+        run: ls /tmp/dnnl_mac_1.1.3_cpu_iomp/lib && build/bin/test_singa
